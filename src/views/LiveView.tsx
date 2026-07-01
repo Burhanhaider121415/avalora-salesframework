@@ -140,17 +140,16 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
 
       {/* Sticky Action Bar */}
       <div style={{
-        position: 'fixed',
-        bottom: '80px',
-        left: 0,
-        right: 0,
+        position: 'sticky',
+        bottom: '0',
         backgroundColor: '#fff',
-        padding: '12px 16px',
+        padding: '12px 0',
         borderTop: '1px solid var(--color-border)',
         display: 'flex',
         gap: '8px',
         justifyContent: 'space-between',
-        zIndex: 10
+        zIndex: 10,
+        marginTop: '24px'
       }}>
         {onOpenNotes && (
           <button className="btn" onClick={onOpenNotes} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>

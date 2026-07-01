@@ -11,6 +11,8 @@ import OutreachView from './views/OutreachView';
 import CadenceView from './views/CadenceView';
 import './index.css';
 
+import { SidebarNav } from './components/SidebarNav';
+
 function App() {
   const [currentMode, setCurrentMode] = useState<Mode | 'safety' | 'outreach' | 'cadence'>('start');
   const [activeWorkspace, setActiveWorkspace] = useState<'medspa' | 'partner'>('medspa');
@@ -73,18 +75,28 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <TopBar 
-        currentMode={currentMode === 'outreach' || currentMode === 'safety' || currentMode === 'cadence' ? 'start' : currentMode} 
-        workspace={activeWorkspace} 
-        onWorkspaceToggle={() => setActiveWorkspace(prev => prev === 'medspa' ? 'partner' : 'medspa')}
-        onReset={() => setCurrentMode('start')}
-      />
-      <div className="content-area">
-        {renderContent()}
+    <div className="desktop-layout">
+      <SidebarNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />
+      
+      <div className="app-container main-content-wrapper">
+        <TopBar 
+          currentMode={currentMode === 'outreach' || currentMode === 'safety' || currentMode === 'cadence' ? 'start' : currentMode} 
+          workspace={activeWorkspace} 
+          onWorkspaceToggle={() => setActiveWorkspace(prev => prev === 'medspa' ? 'partner' : 'medspa')}
+          onReset={() => setCurrentMode('start')}
+        />
+        <div className="content-area">
+          {renderContent()}
+        </div>
+        {(currentMode !== 'safety' && currentMode !== 'outreach') && (
+          <BottomNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />
+        )}
       </div>
-      {(currentMode !== 'safety' && currentMode !== 'outreach') && (
-        <BottomNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />
+
+      {currentMode !== 'notes' && (
+        <div className="right-utility-panel">
+          <NotesView workspace={activeWorkspace} isSidePanel={true} />
+        </div>
       )}
     </div>
   );
