@@ -1,317 +1,364 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { checkGuardrails } from '../utils/languageGuardrails';
+import React, { useEffect, useState } from 'react';
 import type { NoteContext, Workspace } from '../types/app';
-import { loadNotesDraft, saveNotesDraft } from '../utils/notesStorage';
-import { buildNoteParagraph } from '../utils/notesOutput';
 
 interface NotesViewProps {
   initialContext?: NoteContext;
   workspace?: Workspace;
   isSidePanel?: boolean;
 }
-const MEDSPA_CONTEXTS: NoteContext[] = ['gatekeeper', 'owner', 'fit_call', 'demo', 'email', 'ig'];
-const PARTNER_CONTEXTS: NoteContext[] = ['partner'];
 
-function getDefaultContext(workspace: Workspace, initialContext: NoteContext): NoteContext {
-  if (workspace === 'partner') {
-    return 'partner';
-  }
+type NoteCategory = 'Gatekeeper' | 'Owner Call' | 'Fit Call' | 'Sales/Demo' | 'Email' | 'Instagram' | 'Referral Partner' | 'General';
 
-  return initialContext === 'partner' ? 'gatekeeper' : initialContext;
+interface SavedNote {
+  id: string;
+  category: NoteCategory;
+  title: string;
+  body: string;
+  createdAt: string;
 }
 
-const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', workspace = 'medspa', isSidePanel = false }) => {
-  const [context, setContext] = useState<NoteContext>(getDefaultContext(workspace, initialContext));
-  const [formData, setFormData] = useState<Record<string, string>>({});
+const STORAGE_KEY = 'avalora-notes-v2';
+
+const CATEGORIES: NoteCategory[] = [
+  'Gatekeeper', 'Owner Call', 'Fit Call', 'Sales/Demo',
+  'Email', 'Instagram', 'Referral Partner', 'General'
+];
+
+function contextToCategory(ctx: NoteContext): NoteCategory {
+  switch (ctx) {
+    case 'gatekeeper': return 'Gatekeeper';
+    case 'owner': return 'Owner Call';
+    case 'fit_call': return 'Fit Call';
+    case 'demo': return 'Sales/Demo';
+    case 'email': return 'Email';
+    case 'ig': return 'Instagram';
+    case 'partner': return 'Referral Partner';
+    case 'general': return 'General';
+    default: return 'General';
+  }
+}
+
+function loadNotes(): SavedNote[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistNotes(notes: SavedNote[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  } catch {
+    // localStorage full or unavailable
+  }
+}
+
+const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', workspace = 'medspa', isSidePanel = false }) => {
+  const [category, setCategory] = useState<NoteCategory>(contextToCategory(initialContext));
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+  const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState('');
-  const [guardrailWarnings, setGuardrailWarnings] = useState<string[]>([]);
-  const [storageMessage, setStorageMessage] = useState('');
-  const hydratedRef = useRef(false);
 
-  const availableContexts = useMemo(
-    () => (workspace === 'partner' ? PARTNER_CONTEXTS : MEDSPA_CONTEXTS),
-    [workspace]
-  );
-
+  // Load notes on mount
   useEffect(() => {
-    const nextContext = getDefaultContext(workspace, initialContext);
-    if (!availableContexts.includes(nextContext)) {
-      setContext(availableContexts[0]);
-      return;
-    }
+    setSavedNotes(loadNotes());
+  }, []);
 
-    setContext(nextContext);
-  }, [availableContexts, initialContext, workspace]);
-
+  // Sync context from parent
   useEffect(() => {
-    hydratedRef.current = false;
-    setGuardrailWarnings([]);
-    setCopyStatus('');
+    setCategory(contextToCategory(initialContext));
+  }, [initialContext]);
 
-    try {
-      setFormData(loadNotesDraft(window.localStorage, workspace, context));
-      setStorageMessage('');
-    } catch {
-      setFormData({});
-      setStorageMessage('Note not saved locally. Copy it before leaving.');
-    } finally {
-      hydratedRef.current = true;
+  // Filter notes by workspace context
+  const partnerCategories: NoteCategory[] = ['Referral Partner', 'General'];
+  const displayedNotes = workspace === 'partner'
+    ? savedNotes.filter(n => partnerCategories.includes(n.category))
+    : savedNotes;
+
+  const handleSave = () => {
+    if (!noteBody.trim()) return;
+
+    const noteNumber = savedNotes.length + 1;
+    const title = noteTitle.trim() || `Note ${noteNumber}`;
+
+    if (editingId) {
+      const updated = savedNotes.map(n =>
+        n.id === editingId ? { ...n, category, title, body: noteBody } : n
+      );
+      setSavedNotes(updated);
+      persistNotes(updated);
+      setEditingId(null);
+    } else {
+      const newNote: SavedNote = {
+        id: Date.now().toString(),
+        category,
+        title,
+        body: noteBody,
+        createdAt: new Date().toLocaleString(),
+      };
+      const updated = [newNote, ...savedNotes];
+      setSavedNotes(updated);
+      persistNotes(updated);
     }
-  }, [context, workspace]);
 
-  useEffect(() => {
-    if (!hydratedRef.current) {
-      return;
-    }
-
-    try {
-      saveNotesDraft(window.localStorage, workspace, context, formData);
-      setStorageMessage('');
-    } catch {
-      setStorageMessage('Note not saved locally. Copy it before leaving.');
-    }
-  }, [context, formData, workspace]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setNoteTitle('');
+    setNoteBody('');
   };
 
-  const getFields = () => {
-    switch (context) {
-      case 'gatekeeper':
-        return [
-          { name: 'clinicName', label: 'Clinic Name' },
-          { name: 'whoAnswered', label: 'Who Answered / Receptionist Name' },
-          { name: 'attitude', label: 'Attitude (Helpful / Neutral / Blocking)', type: 'select', options: ['Helpful', 'Neutral', 'Blocking'] },
-          { name: 'rightPerson', label: 'Right Person Name & Title' },
-          { name: 'directEmail', label: 'Direct Email' },
-          { name: 'demoPermission', label: 'Permission to send short demo?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'mainObjection', label: 'Main Objection' },
-          { name: 'nextAction', label: 'Next Action' },
-          { name: 'followUpDate', label: 'Follow-up Date', type: 'date' },
-        ];
-      case 'owner':
-        return [
-          { name: 'ownerName', label: 'Owner/Operator Name' },
-          { name: 'personalization', label: 'Personalization Used' },
-          { name: 'painSignal', label: 'Main Pain Signal' },
-          { name: 'angleUsed', label: 'Angle Used' },
-          { name: 'objection', label: 'Objection' },
-          { name: 'demoSent', label: 'Demo Sent?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'fitCallBooked', label: 'Fit Call Booked?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'nextStep', label: 'Next Step' },
-          { name: 'followUpTime', label: 'Follow-up Time', type: 'date' },
-        ];
-      case 'fit_call':
-        return [
-          { name: 'whyNow', label: 'Why Now?' },
-          { name: 'frontDeskIssue', label: 'Front Desk Bottleneck' },
-          { name: 'afterHoursIssue', label: 'After-Hours Issue' },
-          { name: 'bilingualNeed', label: 'Bilingual Need' },
-          { name: 'bookingSystem', label: 'Booking/CRM System' },
-          { name: 'goodFit', label: 'Fit Quality', type: 'select', options: ['Good Fit', 'Weak Fit'] },
-          { name: 'demoBooked', label: 'Sales/Demo Zoom Booked?', type: 'select', options: ['Yes', 'No'] },
-        ];
-      case 'demo':
-        return [
-          { name: 'exactPain', label: 'Exact Pain from Fit Call' },
-          { name: 'demoScenario', label: 'Demo Scenario Used' },
-          { name: 'revenueLeak', label: 'Revenue Leak Estimate' },
-          { name: 'safetyConcern', label: 'Safety Concern' },
-          { name: 'bookingMode', label: 'Booking Mode', type: 'select', options: ['Direct Booking', 'Summary Mode'] },
-          { name: 'packageRecommended', label: 'Package Recommended' },
-          { name: 'objections', label: 'Objections' },
-          { name: 'verbalYes', label: 'Verbal Yes?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'activationSent', label: 'Activation Packet Sent?', type: 'select', options: ['Yes', 'No'] },
-        ];
-      case 'email':
-        return [
-          { name: 'clinicName', label: 'Clinic Name' },
-          { name: 'researchAngle', label: 'Research Angle' },
-          { name: 'emailScenario', label: 'Email Scenario' },
-          { name: 'subjectLine', label: 'Subject Line Used' },
-          { name: 'replyType', label: 'Reply Type' },
-          { name: 'nextFollowUp', label: 'Next Follow-up', type: 'date' },
-        ];
-      case 'ig':
-        return [
-          { name: 'clinicName', label: 'Clinic Name' },
-          { name: 'igHandle', label: 'IG Handle' },
-          { name: 'fitScore', label: 'Fit Score (1-10)' },
-          { name: 'dmFamily', label: 'DM Family Used' },
-          { name: 'engagementDone', label: 'Engagement Done?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'replyType', label: 'Reply Type' },
-          { name: 'demoPermission', label: 'Demo Permission?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'nextAction', label: 'Next Action' },
-        ];
-      case 'partner':
-        return [
-          { name: 'partnerName', label: 'Partner Name' },
-          { name: 'company', label: 'Company' },
-          { name: 'medSpaAccess', label: 'Med Spa Access Level' },
-          { name: 'trustLevel', label: 'Trust Level (1-10)' },
-          { name: 'demoSent', label: 'Demo Sent?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'thankYouDiscussed', label: 'Partner Thank-You Discussed?', type: 'select', options: ['Yes', 'No'] },
-          { name: 'nextAction', label: 'Next Action' },
-          { name: 'followUpDate', label: 'Follow-up Date', type: 'date' },
-        ];
-      default:
-        return [];
+  const handleEdit = (note: SavedNote) => {
+    setCategory(note.category);
+    setNoteTitle(note.title);
+    setNoteBody(note.body);
+    setEditingId(note.id);
+  };
+
+  const handleDelete = (id: string) => {
+    const updated = savedNotes.filter(n => n.id !== id);
+    setSavedNotes(updated);
+    persistNotes(updated);
+    if (editingId === id) {
+      setEditingId(null);
+      setNoteTitle('');
+      setNoteBody('');
     }
   };
 
-  const currentFields = getFields();
-
-  const generatedText = useMemo(() => {
-    return buildNoteParagraph(context, currentFields, formData, new Date().toLocaleDateString());
-  }, [context, currentFields, formData]);
-
-  const handleCopy = async () => {
-    const warnings = checkGuardrails(generatedText, workspace === 'partner');
-    setGuardrailWarnings(warnings);
-
+  const handleCopyNote = async (text: string) => {
     try {
-      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-        throw new Error('Clipboard unavailable');
-      }
-
-      await navigator.clipboard.writeText(generatedText);
-      setCopyStatus(warnings.length > 0 ? 'Copied (with warnings)' : 'Copied clean!');
+      await navigator.clipboard.writeText(text);
+      setCopyStatus('Copied!');
     } catch {
-      setCopyStatus('Copy manually from the text below.');
+      setCopyStatus('Copy failed');
     }
-
-    window.setTimeout(() => setCopyStatus(''), 3000);
+    setTimeout(() => setCopyStatus(''), 2000);
   };
 
   const handleClear = () => {
-    setFormData({});
-    setGuardrailWarnings([]);
-    setCopyStatus('');
+    setNoteTitle('');
+    setNoteBody('');
+    setEditingId(null);
   };
 
+  // ─── Side Panel (compact) ───
+  if (isSidePanel) {
+    return (
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px', height: '100%', overflowY: 'auto' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-deep-charcoal)', margin: 0 }}>
+          Quick Notes
+        </h3>
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as NoteCategory)}
+          style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-light-gray)', fontSize: '13px', fontFamily: 'inherit' }}
+        >
+          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        <textarea
+          value={noteBody}
+          onChange={(e) => setNoteBody(e.target.value)}
+          placeholder="Type your note here..."
+          style={{
+            width: '100%', minHeight: '100px', padding: '10px', borderRadius: '8px',
+            border: '1px solid var(--color-light-gray)', fontSize: '14px', fontFamily: 'inherit',
+            resize: 'vertical', lineHeight: 1.5
+          }}
+        />
+
+        <button
+          onClick={handleSave}
+          disabled={!noteBody.trim()}
+          style={{
+            width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+            backgroundColor: noteBody.trim() ? 'var(--color-deep-charcoal)' : '#ccc',
+            color: '#fff', border: 'none', cursor: noteBody.trim() ? 'pointer' : 'default',
+            fontFamily: 'inherit'
+          }}
+        >
+          Save Note
+        </button>
+
+        {/* Latest saved notes */}
+        {displayedNotes.slice(0, 5).map(note => (
+          <div key={note.id} className="note-card" style={{ padding: '10px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '4px' }}>
+              {note.title}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--color-muted-sage)', marginBottom: '4px' }}>
+              {note.category} · {note.createdAt}
+            </div>
+            <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.4, overflow: 'hidden', maxHeight: '40px' }}>
+              {note.body}
+            </div>
+            <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+              <button onClick={() => void handleCopyNote(note.body)} style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Copy</button>
+              <button onClick={() => handleDelete(note.id)} className="note-delete-btn" style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #f5c6cb', color: '#a94442', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ─── Full Page View ───
   return (
-    <div className={`flex-col ${!isSidePanel ? 'desktop-notes-layout' : ''}`} style={{ padding: '24px 16px', gap: '24px', height: '100%', overflowY: 'auto' }}>
+    <div className="notes-scratchpad" style={{ padding: '24px 16px', paddingBottom: '100px' }}>
       <div>
-        <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-deep-charcoal)', marginBottom: '6px' }}>
           Quick Notes
         </h2>
-        <p className="body-text" style={{ color: 'var(--color-muted-sage)', fontSize: '13px' }}>
-          Local scratchpad. Copy output to your external sheet.
+        <p style={{ fontSize: '15px', color: 'var(--color-muted-sage)', lineHeight: 1.5 }}>
+          Simple scratchpad. Save notes locally in your browser. Copy to paste into your external sheet.
         </p>
       </div>
 
-      {storageMessage && (
-        <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
-          <p style={{ fontSize: '14px', color: '#D32F2F', fontWeight: 600 }}>{storageMessage}</p>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: isSidePanel ? 'column' : 'row', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
-        {isSidePanel ? (
-          <select 
-            value={context} 
-            onChange={(e) => setContext(e.target.value as NoteContext)}
-            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-light-gray)' }}
+      {/* Category selector */}
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {CATEGORIES.map(c => (
+          <button
+            key={c}
+            onClick={() => setCategory(c)}
+            style={{
+              padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: category === c ? 600 : 400,
+              whiteSpace: 'nowrap', border: category === c ? '2px solid var(--color-deep-charcoal)' : '1px solid var(--color-light-gray)',
+              backgroundColor: category === c ? 'var(--color-deep-charcoal)' : '#fff',
+              color: category === c ? '#fff' : 'var(--color-deep-charcoal)',
+              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s ease'
+            }}
           >
-            {availableContexts.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        ) : (
-          availableContexts.map((ctx) => (
-            <button
-              key={ctx}
-              className={`btn ${context === ctx ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
-              onClick={() => setContext(ctx)}
-            >
-              {ctx}
-            </button>
-          ))
-        )}
+            {c}
+          </button>
+        ))}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: isSidePanel ? 'column' : 'row', gap: '24px', flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-          {currentFields.map((field) => (
-            <div key={field.name}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-deep-charcoal)' }}>
-                {field.label}
+      {/* Note form */}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '14px', border: '1px solid var(--color-light-gray)', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-deep-charcoal)' }}>
+                Note Title <span style={{ fontWeight: 400, color: 'var(--color-muted-sage)' }}>(optional)</span>
               </label>
-              {field.type === 'select' ? (
-                <select
-                  value={formData[field.name] || ''}
-                  onChange={(event) => handleInputChange(field.name, event.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
-                >
-                  <option value="">-- Select --</option>
-                  {field.options?.map((option) => <option key={option} value={option}>{option}</option>)}
-                </select>
-              ) : field.type === 'date' ? (
-                <input
-                  type="date"
-                  value={formData[field.name] || ''}
-                  onChange={(event) => handleInputChange(field.name, event.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={formData[field.name] || ''}
-                  onChange={(event) => handleInputChange(field.name, event.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
-                />
-              )}
+              <input
+                type="text"
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                placeholder="e.g. Call with Dr. Smith"
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '8px',
+                  border: '1px solid var(--color-light-gray)', fontSize: '15px', fontFamily: 'inherit'
+                }}
+              />
             </div>
-          ))}
-        </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {guardrailWarnings.length > 0 && (
-            <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
-              <h4 style={{ color: '#D32F2F', fontWeight: 600, marginBottom: '8px' }}>Language Guardrail Warning</h4>
-              <p style={{ fontSize: '14px', color: '#D32F2F', marginBottom: '8px' }}>Your note contains forbidden or risky words:</p>
-              <ul style={{ fontSize: '14px', color: '#D32F2F', paddingLeft: '20px' }}>
-                {guardrailWarnings.map((warning, index) => <li key={index}>{warning}</li>)}
-              </ul>
-              <p style={{ fontSize: '12px', color: '#D32F2F', marginTop: '8px', fontStyle: 'italic' }}>
-                Please rewrite these terms before pasting into any client-facing system or official sheet if they are visible to others.
-              </p>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-deep-charcoal)' }}>
+                Note
+              </label>
+              <textarea
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                placeholder="Type your note here..."
+                style={{
+                  width: '100%', minHeight: '180px', padding: '14px', borderRadius: '8px',
+                  border: '1px solid var(--color-light-gray)', fontSize: '16px', fontFamily: 'inherit',
+                  resize: 'vertical', lineHeight: 1.6
+                }}
+              />
             </div>
-          )}
 
-          <div style={{ backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-accent-amber)' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>Generated Note Output</h3>
-            <textarea
-              readOnly
-              value={generatedText || 'Start typing above to generate your note...'}
-              style={{
-                width: '100%',
-                minHeight: '100px',
-                fontSize: '14px',
-                color: 'var(--color-slate-grey)',
-                lineHeight: 1.5,
-                backgroundColor: '#fff',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px dashed var(--color-border)',
-                resize: 'vertical',
-                fontFamily: 'inherit',
-              }}
-            />
-
-            {copyStatus && (
-              <p style={{ fontSize: '12px', color: 'var(--color-deep-charcoal)', marginTop: '8px' }}>{copyStatus}</p>
-            )}
-
-            <div className="flex gap-2" style={{ marginTop: '16px' }}>
-              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => void handleCopy()}>
-                Copy Paragraph
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={handleSave}
+                disabled={!noteBody.trim()}
+                style={{
+                  flex: 1, padding: '14px', borderRadius: '8px', fontSize: '16px', fontWeight: 600,
+                  backgroundColor: noteBody.trim() ? 'var(--color-deep-charcoal)' : '#ccc',
+                  color: '#fff', border: 'none', cursor: noteBody.trim() ? 'pointer' : 'default',
+                  fontFamily: 'inherit'
+                }}
+              >
+                {editingId ? 'Update Note' : 'Save Note'}
               </button>
-              <button className="btn btn-secondary" style={{ padding: '12px' }} onClick={handleClear}>
+              <button
+                onClick={() => void handleCopyNote(noteBody)}
+                disabled={!noteBody.trim()}
+                style={{
+                  padding: '14px 20px', borderRadius: '8px', fontSize: '15px',
+                  backgroundColor: '#fff', color: 'var(--color-deep-charcoal)',
+                  border: '1px solid var(--color-light-gray)', cursor: noteBody.trim() ? 'pointer' : 'default',
+                  fontFamily: 'inherit'
+                }}
+              >
+                {copyStatus || 'Copy Note'}
+              </button>
+              <button
+                onClick={handleClear}
+                style={{
+                  padding: '14px 20px', borderRadius: '8px', fontSize: '15px',
+                  backgroundColor: '#fff', color: 'var(--color-muted-sage)',
+                  border: '1px solid var(--color-light-gray)', cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
                 Clear
               </button>
             </div>
+            {editingId && (
+              <button
+                onClick={handleClear}
+                style={{
+                  padding: '10px', borderRadius: '8px', fontSize: '14px',
+                  backgroundColor: 'var(--color-warm-ivory)', color: 'var(--color-deep-charcoal)',
+                  border: '1px solid var(--color-light-gray)', cursor: 'pointer', fontFamily: 'inherit'
+                }}
+              >
+                Cancel Edit
+              </button>
+            )}
           </div>
+        </div>
+
+        {/* Saved notes list */}
+        <div style={{ flex: '1 1 360px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-deep-charcoal)', margin: 0 }}>
+            Saved Notes ({displayedNotes.length})
+          </h3>
+
+          {displayedNotes.length === 0 ? (
+            <p style={{ fontSize: '14px', color: 'var(--color-muted-sage)', padding: '20px 0' }}>
+              No notes saved yet. Notes persist in this browser after refresh.
+            </p>
+          ) : (
+            displayedNotes.map(note => (
+              <div key={note.id} className="note-card">
+                <div className="note-card-header">
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '4px' }}>
+                      {note.title}
+                    </div>
+                    <div className="note-card-meta">
+                      <span className="note-badge note-badge-category">{note.category}</span>
+                      <span className="note-badge note-badge-date">{note.createdAt}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="note-card-preview">{note.body}</div>
+                <div className="note-card-actions">
+                  <button onClick={() => handleEdit(note)}>Edit</button>
+                  <button onClick={() => void handleCopyNote(note.body)}>Copy</button>
+                  <button className="note-delete-btn" onClick={() => handleDelete(note.id)}>Delete</button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

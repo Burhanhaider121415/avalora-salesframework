@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { livePaths } from '../data/livePaths';
 import type { NoteContext, Workspace } from '../types/app';
 
@@ -13,14 +13,31 @@ interface LiveViewProps {
 const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary, onOpenNotes }) => {
   const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(scenario);
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
   
+  // Build ordered node array for sequential navigation
+  const nodeOrder = useMemo(() => {
+    if (!currentScenarioId || !livePaths[currentScenarioId]) return [];
+    return Object.keys(livePaths[currentScenarioId].nodes);
+  }, [currentScenarioId]);
+
+  const currentIndex = useMemo(() => {
+    if (!currentNodeId) return -1;
+    return nodeOrder.indexOf(currentNodeId);
+  }, [currentNodeId, nodeOrder]);
+
+  const isFirstStep = currentIndex <= 0;
+  const isLastStep = currentIndex >= nodeOrder.length - 1;
+
   // Update state when props change
   useEffect(() => {
     setCurrentScenarioId(scenario);
     if (scenario && livePaths[scenario]) {
       setCurrentNodeId(livePaths[scenario].initialNode);
+      setHistory([]);
     } else {
       setCurrentNodeId(null);
+      setHistory([]);
     }
   }, [scenario, workspace]);
 
@@ -28,55 +45,77 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
     if (livePaths[id]) {
       setCurrentScenarioId(id);
       setCurrentNodeId(livePaths[id].initialNode);
+      setHistory([]);
     }
   };
 
-  const handleAction = (target: string) => {
+  const handleNextStep = () => {
+    if (!currentNodeId || isLastStep) return;
+    setHistory(prev => [...prev, currentNodeId]);
+    setCurrentNodeId(nodeOrder[currentIndex + 1]);
+  };
+
+  const handleBackStep = () => {
+    if (history.length > 0) {
+      const prev = history[history.length - 1];
+      setHistory(h => h.slice(0, -1));
+      setCurrentNodeId(prev);
+    } else if (!isFirstStep) {
+      setCurrentNodeId(nodeOrder[currentIndex - 1]);
+    }
+  };
+
+  const handleBranch = (target: string) => {
     if (!currentScenarioId || !currentNodeId) return;
     const path = livePaths[currentScenarioId];
     if (!path) return;
 
+    // Cross-scenario transitions
     if (currentScenarioId === 'medspa_gatekeeper' && target === 'owner_answers_placeholder') {
+      setHistory(prev => [...prev, currentNodeId]);
       setCurrentScenarioId('medspa_owner');
       setCurrentNodeId(livePaths.medspa_owner.initialNode);
       return;
     }
 
     if (currentScenarioId === 'partner_gatekeeper' && target === 'partner_answers') {
+      setHistory(prev => [...prev, currentNodeId]);
       setCurrentScenarioId('partner_live');
       setCurrentNodeId(livePaths.partner_live.initialNode);
       return;
     }
 
-    if (target === 'next' || target === 'back') {
-      // Basic linear navigation based on node order logic could go here,
-      // but we specified specific targets in the data except for linear ones where we just used 'next'/'back'.
-      // Wait, in my livePaths, for linear I used 'next' and 'back', but I didn't specify the explicit next ID.
-      // Let's implement a simple array-based lookup for linear step modes.
-      const nodesArray = Object.values(path.nodes);
-      const currentIndex = nodesArray.findIndex(n => n.id === currentNodeId);
-      if (target === 'next' && currentIndex < nodesArray.length - 1) {
-        setCurrentNodeId(nodesArray[currentIndex + 1].id);
-      } else if (target === 'back' && currentIndex > 0) {
-        setCurrentNodeId(nodesArray[currentIndex - 1].id);
-      }
-    } else if (target === 'done' || target === 'disposition') {
-      // Show end state or reset
+    if (target === 'next') {
+      handleNextStep();
+      return;
+    }
+
+    if (target === 'back') {
+      handleBackStep();
+      return;
+    }
+
+    if (target === 'done' || target === 'disposition') {
       onReset();
-    } else if (path.nodes[target]) {
+      return;
+    }
+
+    // Branch to a specific node
+    if (path.nodes[target]) {
+      setHistory(prev => [...prev, currentNodeId]);
       setCurrentNodeId(target);
     }
   };
 
+  // ─── Live Landing (no scenario selected) ───
   if (!currentScenarioId || !livePaths[currentScenarioId] || livePaths[currentScenarioId].workspace !== workspace) {
-    // Show Live Landing
     const availablePaths = Object.values(livePaths).filter(p => p.workspace === workspace);
     
     return (
       <div className="flex-col gap-6 pb-6">
         <div className="mb-4">
-          <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>Live Mode Execution</h2>
-          <p style={{ color: 'var(--color-muted-sage)' }}>Select the current live situation to begin.</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>Live Mode Execution</h2>
+          <p style={{ color: 'var(--color-muted-sage)', fontSize: '16px' }}>Select the current live situation to begin.</p>
         </div>
         
         <div className="flex-col gap-4">
@@ -85,7 +124,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
               key={path.id}
               className="card btn-secondary" 
               onClick={() => handleSelectScenario(path.id)} 
-              style={{ textAlign: 'left', padding: '16px' }}
+              style={{ textAlign: 'left', padding: '20px', cursor: 'pointer' }}
             >
               <div style={{ fontSize: '18px', fontWeight: 600 }}>{path.name}</div>
             </button>
@@ -95,6 +134,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
     );
   }
 
+  // ─── Active Live Mode Step ───
   const path = livePaths[currentScenarioId];
   const node = currentNodeId ? path.nodes[currentNodeId] : null;
 
@@ -103,66 +143,114 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
   }
 
   const isMedSpa = workspace === 'medspa';
-  const accentColor = isMedSpa ? 'var(--color-accent-amber)' : 'var(--color-accent-sage)';
+  const accentColor = isMedSpa ? 'var(--color-soft-amber)' : 'var(--color-muted-sage)';
   let notesContext: NoteContext = workspace === 'partner' ? 'partner' : 'gatekeeper';
 
-  if (currentScenarioId === 'medspa_owner') {
-    notesContext = 'owner';
-  }
+  if (currentScenarioId === 'medspa_owner') notesContext = 'owner';
+  if (currentScenarioId === 'fit_call') notesContext = 'fit_call';
+  if (currentScenarioId === 'sales_demo') notesContext = 'demo';
 
-  if (currentScenarioId === 'fit_call') {
-    notesContext = 'fit_call';
-  }
-
-  if (currentScenarioId === 'sales_demo') {
-    notesContext = 'demo';
-  }
+  // Filter branch buttons that are not 'next' or 'back' (those are handled by dedicated buttons)
+  const branchButtons = node.branchButtons.filter(
+    btn => btn.target !== 'next' && btn.target !== 'back'
+  );
 
   return (
-    <div className="flex-col h-full pb-20">
-      <div className="mb-4 flex gap-2" style={{ alignItems: 'center' }}>
+    <div className="flex-col" style={{ paddingBottom: '120px' }}>
+      {/* Step progress bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div className="live-step-progress">
+          <span className="step-indicator">Step {currentIndex + 1} of {nodeOrder.length}</span>
+          <span>{path.name}</span>
+        </div>
+      </div>
+
+      {/* Stage badge */}
+      <div className="mb-4" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         <span style={{ 
-          fontSize: '12px', 
+          fontSize: '13px', 
           fontWeight: 600, 
-          padding: '4px 8px', 
-          borderRadius: '4px',
+          padding: '5px 12px', 
+          borderRadius: '6px',
           backgroundColor: accentColor,
-          color: 'var(--color-deep-charcoal)'
+          color: '#fff'
         }}>
           {node.stage}
         </span>
       </div>
 
+      {/* Goal */}
       <div className="mb-4">
-        <span className="label-text">Goal: {node.goal}</span>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-muted-sage)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Goal
+        </span>
+        <p style={{ fontSize: '16px', color: 'var(--color-deep-charcoal)', marginTop: '4px', lineHeight: 1.5 }}>
+          {node.goal}
+        </p>
       </div>
 
-      <div className="card mb-6" style={{ minHeight: '200px', borderLeft: `4px solid ${accentColor}` }}>
+      {/* Script / Say-This card */}
+      <div className="card" style={{ minHeight: '160px', borderLeft: `4px solid ${accentColor}`, marginBottom: '20px' }}>
         {node.useWhen && (
           <p style={{ fontSize: '14px', color: 'var(--color-muted-sage)', marginBottom: '12px', fontStyle: 'italic' }}>
             Use when: {node.useWhen}
           </p>
         )}
-        <p className="script-text" style={{ whiteSpace: 'pre-wrap', fontWeight: 500 }}>
+        <p className="script-text" style={{ whiteSpace: 'pre-wrap', fontWeight: 500, lineHeight: 1.55 }}>
           {node.sayThis}
         </p>
+        {node.instructions && node.instructions.length > 0 && (
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--color-light-gray)' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-muted-sage)', textTransform: 'uppercase' }}>Instructions</span>
+            <ul style={{ margin: '8px 0 0', paddingLeft: '20px' }}>
+              {node.instructions.map((inst, i) => (
+                <li key={i} style={{ fontSize: '14px', lineHeight: 1.5, marginBottom: '4px', color: 'var(--color-deep-charcoal)' }}>
+                  {inst}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      <div className="flex-col gap-4 mt-auto">
-        <h3 className="label-text">What happened? / Next Step</h3>
-        <div className="flex-col gap-3">
-          {node.branchButtons.map((btn) => (
-            <button 
-              key={btn.id} 
-              className="btn btn-secondary" 
-              onClick={() => handleAction(btn.target)}
-              style={{ justifyContent: 'flex-start', padding: '12px 24px', fontSize: '16px' }}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
+      {/* ── Primary Navigation: Back + Next Framework Step ── */}
+      <div className="live-nav-row">
+        <button
+          className="btn-back-step"
+          onClick={handleBackStep}
+          disabled={isFirstStep && history.length === 0}
+          style={{ opacity: (isFirstStep && history.length === 0) ? 0.4 : 1 }}
+        >
+          ← Back
+        </button>
+        <button
+          className="btn-next-step"
+          onClick={handleNextStep}
+          disabled={isLastStep}
+          style={{ opacity: isLastStep ? 0.4 : 1 }}
+        >
+          Next Framework Step →
+        </button>
       </div>
+
+      {/* ── Branch/Outcome Buttons ── */}
+      {branchButtons.length > 0 && (
+        <div className="live-branch-section">
+          <h3>What happened? / Outcome</h3>
+          <div className="flex-col gap-3">
+            {branchButtons.map((btn) => (
+              <button 
+                key={btn.id} 
+                className="btn btn-secondary" 
+                onClick={() => handleBranch(btn.target)}
+                style={{ justifyContent: 'flex-start', padding: '12px 20px', fontSize: '15px' }}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Sticky Action Bar */}
       <div style={{
@@ -170,19 +258,19 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
         bottom: '0',
         backgroundColor: '#fff',
         padding: '12px 0',
-        borderTop: '1px solid var(--color-border)',
+        borderTop: '1px solid var(--color-light-gray)',
         display: 'flex',
         gap: '8px',
         justifyContent: 'space-between',
         zIndex: 10,
-        marginTop: '24px'
+        marginTop: '28px'
       }}>
         {onOpenNotes && (
-          <button className="btn" onClick={() => onOpenNotes(notesContext)} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+          <button className="btn" onClick={() => onOpenNotes(notesContext)} style={{ flex: 1, padding: '10px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-light-gray)', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '8px' }}>
             Quick Notes
           </button>
         )}
-        <button className="btn" onClick={onGoToLibrary} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+        <button className="btn" onClick={onGoToLibrary} style={{ flex: 1, padding: '10px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-light-gray)', fontFamily: 'inherit', cursor: 'pointer', borderRadius: '8px' }}>
           Full Framework
         </button>
       </div>

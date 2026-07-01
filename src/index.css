@@ -295,3 +295,318 @@ p {
   border-radius: 4px;
   font-weight: 600;
 }
+
+/* =====================================================
+   ISSUE 1 — Library / Framework Readability
+   ===================================================== */
+
+.framework-content {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--color-deep-charcoal);
+  max-width: 780px;
+}
+
+.framework-content p {
+  margin-bottom: 14px;
+}
+
+.framework-content h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 36px;
+  margin-bottom: 16px;
+  color: var(--color-deep-charcoal);
+  border-bottom: 2px solid var(--color-soft-champagne);
+  padding-bottom: 8px;
+}
+
+.framework-content h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 12px;
+  color: var(--color-deep-charcoal);
+}
+
+.framework-content h4 {
+  font-size: 19px;
+  font-weight: 600;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #3a3f54;
+}
+
+.framework-content ul,
+.framework-content ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.framework-content li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.framework-content .script-block {
+  background-color: #f0ede6;
+  border-left: 4px solid var(--color-soft-amber);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 17px;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.framework-content .warning-block {
+  background-color: #fdf2f0;
+  border-left: 4px solid #c0392b;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.framework-content .warning-block strong {
+  color: #c0392b;
+}
+
+.framework-content .objection-block {
+  background-color: #f5f7f5;
+  border-left: 4px solid var(--color-muted-sage);
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.framework-section-card {
+  background-color: #fff;
+  padding: 24px 28px;
+  border-radius: 12px;
+  border: 1px solid var(--color-light-gray);
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .framework-section-card {
+    padding: 16px;
+  }
+  .framework-content {
+    font-size: 15px;
+  }
+}
+
+.library-doc-header {
+  padding: 20px 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease;
+}
+
+.library-doc-header:hover {
+  background-color: var(--color-warm-ivory);
+}
+
+.library-doc-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-deep-charcoal);
+  margin: 0;
+}
+
+.library-doc-body {
+  padding: 24px 28px 32px;
+  border-top: 1px solid var(--color-light-gray);
+}
+
+@media (max-width: 640px) {
+  .library-doc-body {
+    padding: 16px;
+  }
+}
+
+/* =====================================================
+   ISSUE 2 — Simple Notes Scratchpad
+   ===================================================== */
+
+.notes-scratchpad {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.note-card {
+  background: #fff;
+  border: 1px solid var(--color-light-gray);
+  border-radius: 10px;
+  padding: 16px;
+  transition: box-shadow 0.15s ease;
+}
+
+.note-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.note-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.note-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.note-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.note-badge-category {
+  background-color: rgba(212,163,115,0.15);
+  color: #9a6f3e;
+}
+
+.note-badge-date {
+  background-color: var(--color-warm-ivory);
+  color: var(--color-muted-sage);
+}
+
+.note-card-preview {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.note-card-actions button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--color-light-gray);
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.note-card-actions button:hover {
+  border-color: var(--color-deep-charcoal);
+}
+
+.note-card-actions .note-delete-btn {
+  border-color: #f5c6cb;
+  color: #a94442;
+}
+
+.note-card-actions .note-delete-btn:hover {
+  background-color: #fdf2f2;
+}
+
+/* =====================================================
+   ISSUE 3 — Live Mode Navigation
+   ===================================================== */
+
+.live-step-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-muted-sage);
+  font-weight: 500;
+}
+
+.live-step-progress .step-indicator {
+  background-color: var(--color-soft-champagne);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--color-deep-charcoal);
+  font-size: 12px;
+}
+
+.live-nav-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-next-step {
+  background-color: var(--color-deep-charcoal);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-next-step:hover {
+  background-color: #3d4260;
+}
+
+.btn-back-step {
+  background-color: #fff;
+  color: var(--color-deep-charcoal);
+  border: 1px solid var(--color-light-gray);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-back-step:hover {
+  border-color: var(--color-deep-charcoal);
+}
+
+.live-branch-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--color-light-gray);
+}
+
+.live-branch-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted-sage);
+  margin-bottom: 12px;
+}

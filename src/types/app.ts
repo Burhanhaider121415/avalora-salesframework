@@ -7,7 +7,8 @@ export type NoteContext =
   | 'demo'
   | 'email'
   | 'ig'
-  | 'partner';
+  | 'partner'
+  | 'general';
 
 export type AppMode =
   | 'start'
