@@ -1,10 +1,6 @@
 import React from 'react';
 
-interface NotesViewProps {
-  workspace: 'medspa' | 'partner';
-}
-
-const NotesView: React.FC<NotesViewProps> = ({ workspace }) => {
+const NotesView: React.FC = () => {
   return (
     <div className="flex-col gap-6">
       <div className="mb-2">

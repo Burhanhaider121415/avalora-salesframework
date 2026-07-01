@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { livePaths, LivePath, PathNode } from '../data/livePaths';
+import { livePaths } from '../data/livePaths';
 
 interface LiveViewProps {
   workspace: 'medspa' | 'partner';
   scenario: string | null;
   onReset: () => void;
+  onGoToLibrary: () => void;
 }
 
-const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset }) => {
+const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary }) => {
   const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(scenario);
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [isNoteDrawerOpen, setIsNoteDrawerOpen] = useState(false);
@@ -154,7 +155,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset }) => 
         <button className="btn" onClick={() => setIsNoteDrawerOpen(true)} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
           Quick Notes
         </button>
-        <button className="btn" style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+        <button className="btn" onClick={onGoToLibrary} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
           Full Framework
         </button>
       </div>

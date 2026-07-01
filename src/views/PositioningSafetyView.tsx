@@ -1,10 +1,6 @@
 import React from 'react';
 
-interface Props {
-  onBack: () => void;
-}
-
-const PositioningSafetyView: React.FC<Props> = ({ onBack }) => {
+const PositioningSafetyView: React.FC = () => {
   return (
     <div className="flex-col gap-6">
       <div className="mb-4">

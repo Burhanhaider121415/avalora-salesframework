@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BottomNav, Mode } from './components/BottomNav';
+import { useState } from 'react';
+import { BottomNav, type Mode } from './components/BottomNav';
 import { TopBar } from './components/TopBar';
 import StartView from './views/StartView';
 import LiveView from './views/LiveView';
@@ -7,42 +7,61 @@ import LibraryView from './views/LibraryView';
 import SearchView from './views/SearchView';
 import NotesView from './views/NotesView';
 import PositioningSafetyView from './views/PositioningSafetyView';
+import OutreachView from './views/OutreachView';
 import './index.css';
 
 function App() {
-  const [currentMode, setCurrentMode] = useState<Mode | 'safety'>('start');
+  const [currentMode, setCurrentMode] = useState<Mode | 'safety' | 'outreach'>('start');
   const [activeWorkspace, setActiveWorkspace] = useState<'medspa' | 'partner'>('medspa');
   const [activeLiveScenario, setActiveLiveScenario] = useState<string | null>(null);
+  const [activeOutreachMode, setActiveOutreachMode] = useState<string | null>(null);
 
-  const handleStartMode = (scenarioId: string | null, workspaceId: 'medspa' | 'partner') => {
-    setActiveWorkspace(workspaceId);
-    setActiveLiveScenario(scenarioId);
+  const handleLiveModeSelect = (scenario: string | null) => {
+    setActiveLiveScenario(scenario);
     setCurrentMode('live');
+  };
+
+  const handleOutreachModeSelect = (modeId: string) => {
+    setActiveOutreachMode(modeId);
+    setCurrentMode('outreach');
   };
 
   const renderContent = () => {
     switch (currentMode) {
       case 'start':
-        return <StartView onSelectMode={handleStartMode} onOpenSafety={() => setCurrentMode('safety')} />;
+        return <StartView 
+                 workspace={activeWorkspace}
+                 onLiveModeSelect={handleLiveModeSelect} 
+                 onOutreachModeSelect={handleOutreachModeSelect}
+                 onOpenSafety={() => setCurrentMode('safety')} 
+               />;
       case 'live':
-        return <LiveView workspace={activeWorkspace} scenario={activeLiveScenario} onReset={() => setCurrentMode('start')} />;
+        return <LiveView workspace={activeWorkspace} scenario={activeLiveScenario} onReset={() => setCurrentMode('start')} onGoToLibrary={() => setCurrentMode('library')} />;
+      case 'outreach':
+        if (!activeOutreachMode) return null;
+        return <OutreachView modeId={activeOutreachMode} onClose={() => setCurrentMode('start')} />;
       case 'library':
-        return <LibraryView />;
+        return <LibraryView workspace={activeWorkspace} />;
       case 'search':
         return <SearchView />;
       case 'notes':
-        return <NotesView workspace={activeWorkspace} />;
+        return <NotesView />;
       case 'safety':
-        return <PositioningSafetyView onBack={() => setCurrentMode('start')} />;
+        return <PositioningSafetyView />;
       default:
-        return <StartView onSelectMode={handleStartMode} onOpenSafety={() => setCurrentMode('safety')} />;
+        return <StartView 
+                 workspace={activeWorkspace}
+                 onLiveModeSelect={handleLiveModeSelect} 
+                 onOutreachModeSelect={handleOutreachModeSelect}
+                 onOpenSafety={() => setCurrentMode('safety')} 
+               />;
     }
   };
 
   return (
     <div className="app-container">
       <TopBar 
-        currentMode={currentMode} 
+        currentMode={currentMode === 'outreach' || currentMode === 'safety' ? 'start' : currentMode} 
         workspace={activeWorkspace} 
         onWorkspaceToggle={() => setActiveWorkspace(prev => prev === 'medspa' ? 'partner' : 'medspa')}
         onReset={() => setCurrentMode('start')}
@@ -50,7 +69,7 @@ function App() {
       <div className="content-area">
         {renderContent()}
       </div>
-      {(currentMode !== 'safety') && (
+      {(currentMode !== 'safety' && currentMode !== 'outreach') && (
         <BottomNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />
       )}
     </div>

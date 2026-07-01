@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mode } from './BottomNav';
+import type { Mode } from './BottomNav';
 
 interface TopBarProps {
   currentMode: Mode | 'safety';
