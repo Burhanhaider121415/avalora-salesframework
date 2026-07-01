@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { outreachPaths, type ActionTarget } from '../data/outreachPaths';
+import type { NoteContext } from '../types/app';
 
 interface OutreachViewProps {
   modeId: string; // 'email_mode' | 'ig_mode'
   onClose: () => void;
-  onOpenNotes?: () => void;
+  onOpenNotes?: (context: NoteContext) => void;
 }
 
 const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose, onOpenNotes }) => {
@@ -136,7 +137,7 @@ const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose, onOpenNote
         zIndex: 10
       }}>
         {onOpenNotes && (
-          <button className="btn" onClick={onOpenNotes} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+          <button className="btn" onClick={() => onOpenNotes(modeId === 'ig_mode' ? 'ig' : 'email')} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
             Quick Notes
           </button>
         )}

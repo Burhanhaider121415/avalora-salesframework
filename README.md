@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# Avalora Sales Desk
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Internal mobile-friendly sales execution app for Avalora outreach, live call handling, search, and scratchpad notes.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Framework: React + TypeScript + Vite
+- Package manager: npm
 
-## React Compiler
+## Commands
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Install: `npm ci`
+- Dev: `npm run dev`
+- Lint: `npm run lint`
+- Typecheck: not configured as a standalone script
+- Test: not configured
+- Build: `npm run build`
+- Preview: `npm run preview`
 
-## Expanding the Oxlint configuration
+## Vercel note
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+This is a client-side Vite SPA. [vercel.json](./vercel.json) adds the rewrite needed for direct-route refreshes to return `index.html`.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Persistence behavior
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- Frameworks, search data, and live flows are static in-repo content.
+- Notes are local browser scratchpad data only.
+- Notes can be copied into the Google Sheet tracker, but the app does not write to Google Sheets directly.

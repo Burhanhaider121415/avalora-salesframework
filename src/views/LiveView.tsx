@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { livePaths } from '../data/livePaths';
+import type { NoteContext, Workspace } from '../types/app';
 
 interface LiveViewProps {
-  workspace: 'medspa' | 'partner';
+  workspace: Workspace;
   scenario: string | null;
   onReset: () => void;
   onGoToLibrary: () => void;
-  onOpenNotes?: () => void;
+  onOpenNotes?: (context: NoteContext) => void;
 }
 
 const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary, onOpenNotes }) => {
@@ -34,6 +35,18 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
     if (!currentScenarioId || !currentNodeId) return;
     const path = livePaths[currentScenarioId];
     if (!path) return;
+
+    if (currentScenarioId === 'medspa_gatekeeper' && target === 'owner_answers_placeholder') {
+      setCurrentScenarioId('medspa_owner');
+      setCurrentNodeId(livePaths.medspa_owner.initialNode);
+      return;
+    }
+
+    if (currentScenarioId === 'partner_gatekeeper' && target === 'partner_answers') {
+      setCurrentScenarioId('partner_live');
+      setCurrentNodeId(livePaths.partner_live.initialNode);
+      return;
+    }
 
     if (target === 'next' || target === 'back') {
       // Basic linear navigation based on node order logic could go here,
@@ -91,6 +104,19 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
 
   const isMedSpa = workspace === 'medspa';
   const accentColor = isMedSpa ? 'var(--color-accent-amber)' : 'var(--color-accent-sage)';
+  let notesContext: NoteContext = workspace === 'partner' ? 'partner' : 'gatekeeper';
+
+  if (currentScenarioId === 'medspa_owner') {
+    notesContext = 'owner';
+  }
+
+  if (currentScenarioId === 'fit_call') {
+    notesContext = 'fit_call';
+  }
+
+  if (currentScenarioId === 'sales_demo') {
+    notesContext = 'demo';
+  }
 
   return (
     <div className="flex-col h-full pb-20">
@@ -153,7 +179,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
         zIndex: 10
       }}>
         {onOpenNotes && (
-          <button className="btn" onClick={onOpenNotes} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+          <button className="btn" onClick={() => onOpenNotes(notesContext)} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
             Quick Notes
           </button>
         )}

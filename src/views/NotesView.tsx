@@ -1,32 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { checkGuardrails } from '../utils/languageGuardrails';
-
-type NoteContext = 'gatekeeper' | 'owner' | 'fit_call' | 'demo' | 'email' | 'ig' | 'partner';
+import type { NoteContext, Workspace } from '../types/app';
+import { loadNotesDraft, saveNotesDraft } from '../utils/notesStorage';
+import { buildNoteParagraph } from '../utils/notesOutput';
 
 interface NotesViewProps {
   initialContext?: NoteContext;
-  workspace?: 'medspa' | 'partner';
+  workspace?: Workspace;
+}
+const MEDSPA_CONTEXTS: NoteContext[] = ['gatekeeper', 'owner', 'fit_call', 'demo', 'email', 'ig'];
+const PARTNER_CONTEXTS: NoteContext[] = ['partner'];
+
+function getDefaultContext(workspace: Workspace, initialContext: NoteContext): NoteContext {
+  if (workspace === 'partner') {
+    return 'partner';
+  }
+
+  return initialContext === 'partner' ? 'gatekeeper' : initialContext;
 }
 
 const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', workspace = 'medspa' }) => {
-  const [context, setContext] = useState<NoteContext>(initialContext);
+  const [context, setContext] = useState<NoteContext>(getDefaultContext(workspace, initialContext));
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [copyStatus, setCopyStatus] = useState('');
   const [guardrailWarnings, setGuardrailWarnings] = useState<string[]>([]);
+  const [storageMessage, setStorageMessage] = useState('');
+  const hydratedRef = useRef(false);
+
+  const availableContexts = useMemo(
+    () => (workspace === 'partner' ? PARTNER_CONTEXTS : MEDSPA_CONTEXTS),
+    [workspace]
+  );
 
   useEffect(() => {
-    // Reset form when context changes
-    setFormData({});
+    const nextContext = getDefaultContext(workspace, initialContext);
+    if (!availableContexts.includes(nextContext)) {
+      setContext(availableContexts[0]);
+      return;
+    }
+
+    setContext(nextContext);
+  }, [availableContexts, initialContext, workspace]);
+
+  useEffect(() => {
+    hydratedRef.current = false;
     setGuardrailWarnings([]);
     setCopyStatus('');
-  }, [context]);
+
+    try {
+      setFormData(loadNotesDraft(window.localStorage, workspace, context));
+      setStorageMessage('');
+    } catch {
+      setFormData({});
+      setStorageMessage('Note not saved locally. Copy it before leaving.');
+    } finally {
+      hydratedRef.current = true;
+    }
+  }, [context, workspace]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      return;
+    }
+
+    try {
+      saveNotesDraft(window.localStorage, workspace, context, formData);
+      setStorageMessage('');
+    } catch {
+      setStorageMessage('Note not saved locally. Copy it before leaving.');
+    }
+  }, [context, formData, workspace]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const getFields = () => {
-    switch(context) {
+    switch (context) {
       case 'gatekeeper':
         return [
           { name: 'clinicName', label: 'Clinic Name' },
@@ -109,35 +159,28 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', wo
     }
   };
 
-  const generateParagraph = () => {
-    const fields = getFields();
-    let paragraph = `${new Date().toLocaleDateString()} — Context: ${context.toUpperCase().replace('_', ' ')}. `;
-    
-    fields.forEach(f => {
-      const val = formData[f.name];
-      if (val) {
-        paragraph += `${f.label}: ${val}. `;
-      }
-    });
+  const currentFields = getFields();
 
-    return paragraph.trim();
-  };
+  const generatedText = useMemo(() => {
+    return buildNoteParagraph(context, currentFields, formData, new Date().toLocaleDateString());
+  }, [context, currentFields, formData]);
 
-  const handleCopy = () => {
-    const text = generateParagraph();
-    
-    // Check guardrails
-    const warnings = checkGuardrails(text, workspace === 'partner');
+  const handleCopy = async () => {
+    const warnings = checkGuardrails(generatedText, workspace === 'partner');
     setGuardrailWarnings(warnings);
 
-    if (warnings.length > 0) {
-      setCopyStatus('Copied (with warnings)');
-    } else {
-      setCopyStatus('Copied clean!');
+    try {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        throw new Error('Clipboard unavailable');
+      }
+
+      await navigator.clipboard.writeText(generatedText);
+      setCopyStatus(warnings.length > 0 ? 'Copied (with warnings)' : 'Copied clean!');
+    } catch {
+      setCopyStatus('Copy manually from the text below.');
     }
 
-    navigator.clipboard.writeText(text);
-    setTimeout(() => setCopyStatus(''), 3000);
+    window.setTimeout(() => setCopyStatus(''), 3000);
   };
 
   const handleClear = () => {
@@ -145,8 +188,6 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', wo
     setGuardrailWarnings([]);
     setCopyStatus('');
   };
-
-  const currentFields = getFields();
 
   return (
     <div className="flex-col" style={{ padding: '24px 16px', gap: '24px', paddingBottom: '100px' }}>
@@ -160,8 +201,8 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', wo
       </div>
 
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
-        {(['gatekeeper', 'owner', 'fit_call', 'demo', 'email', 'ig', 'partner'] as NoteContext[]).map(ctx => (
-          <button 
+        {availableContexts.map((ctx) => (
+          <button
             key={ctx}
             className={`btn ${context === ctx ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
@@ -172,33 +213,39 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', wo
         ))}
       </div>
 
+      {storageMessage && (
+        <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
+          <p style={{ fontSize: '14px', color: '#D32F2F', fontWeight: 600 }}>{storageMessage}</p>
+        </div>
+      )}
+
       <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {currentFields.map(f => (
-          <div key={f.name}>
+        {currentFields.map((field) => (
+          <div key={field.name}>
             <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-deep-charcoal)' }}>
-              {f.label}
+              {field.label}
             </label>
-            {f.type === 'select' ? (
-              <select 
-                value={formData[f.name] || ''} 
-                onChange={(e) => handleInputChange(f.name, e.target.value)}
+            {field.type === 'select' ? (
+              <select
+                value={formData[field.name] || ''}
+                onChange={(event) => handleInputChange(field.name, event.target.value)}
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
               >
                 <option value="">-- Select --</option>
-                {f.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                {field.options?.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
-            ) : f.type === 'date' ? (
-              <input 
+            ) : field.type === 'date' ? (
+              <input
                 type="date"
-                value={formData[f.name] || ''} 
-                onChange={(e) => handleInputChange(f.name, e.target.value)}
+                value={formData[field.name] || ''}
+                onChange={(event) => handleInputChange(field.name, event.target.value)}
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
               />
             ) : (
-              <input 
+              <input
                 type="text"
-                value={formData[f.name] || ''} 
-                onChange={(e) => handleInputChange(f.name, e.target.value)}
+                value={formData[field.name] || ''}
+                onChange={(event) => handleInputChange(field.name, event.target.value)}
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
               />
             )}
@@ -208,31 +255,50 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', wo
 
       {guardrailWarnings.length > 0 && (
         <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
-          <h4 style={{ color: '#D32F2F', fontWeight: 600, marginBottom: '8px' }}>⚠️ Language Guardrail Warning</h4>
+          <h4 style={{ color: '#D32F2F', fontWeight: 600, marginBottom: '8px' }}>Language Guardrail Warning</h4>
           <p style={{ fontSize: '14px', color: '#D32F2F', marginBottom: '8px' }}>Your note contains forbidden or risky words:</p>
           <ul style={{ fontSize: '14px', color: '#D32F2F', paddingLeft: '20px' }}>
-            {guardrailWarnings.map((w, i) => <li key={i}>{w}</li>)}
+            {guardrailWarnings.map((warning, index) => <li key={index}>{warning}</li>)}
           </ul>
-          <p style={{ fontSize: '12px', color: '#D32F2F', marginTop: '8px', fontStyle: 'italic' }}>Please rewrite these terms before pasting into the client-facing CRM or official sheets if they are visible to others.</p>
+          <p style={{ fontSize: '12px', color: '#D32F2F', marginTop: '8px', fontStyle: 'italic' }}>
+            Please rewrite these terms before pasting into any client-facing system or official sheet if they are visible to others.
+          </p>
         </div>
       )}
 
       <div style={{ backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-accent-amber)' }}>
         <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>Generated Note Output</h3>
-        <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)', lineHeight: 1.5, minHeight: '60px', backgroundColor: '#fff', padding: '12px', borderRadius: '8px', border: '1px dashed var(--color-border)' }}>
-          {generateParagraph() || "Start typing above to generate your note..."}
-        </p>
+        <textarea
+          readOnly
+          value={generatedText || 'Start typing above to generate your note...'}
+          style={{
+            width: '100%',
+            minHeight: '100px',
+            fontSize: '14px',
+            color: 'var(--color-slate-grey)',
+            lineHeight: 1.5,
+            backgroundColor: '#fff',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px dashed var(--color-border)',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+          }}
+        />
+
+        {copyStatus && (
+          <p style={{ fontSize: '12px', color: 'var(--color-deep-charcoal)', marginTop: '8px' }}>{copyStatus}</p>
+        )}
 
         <div className="flex gap-2" style={{ marginTop: '16px' }}>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCopy}>
-            {copyStatus ? copyStatus : 'Copy Paragraph'}
+          <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => void handleCopy()}>
+            Copy Paragraph
           </button>
           <button className="btn btn-secondary" style={{ padding: '12px' }} onClick={handleClear}>
             Clear
           </button>
         </div>
       </div>
-
     </div>
   );
 };

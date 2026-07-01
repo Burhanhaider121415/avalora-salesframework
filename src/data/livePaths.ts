@@ -156,7 +156,7 @@ export const livePaths: Record<string, LivePath> = {
         id: 'disposition',
         stage: 'Disposition',
         goal: 'Log the call.',
-        sayThis: "Log the call outcome in the CRM.",
+        sayThis: "Log the call outcome in Quick Notes, then copy the clean summary into the Google Sheet tracker.",
         branchButtons: []
       }
     }
@@ -269,7 +269,7 @@ export const livePaths: Record<string, LivePath> = {
         id: 'owner_objections',
         stage: 'Owner Objections',
         goal: 'Handle common pushbacks.',
-        sayThis: "[Content Slot: Handle specific objection - e.g. We use an answering service, We have enough staff]",
+        sayThis: "Use the matching objection response from Search or the Full Framework before continuing. Do not improvise pricing, compliance claims, or replacement language.",
         branchButtons: [
           { id: 'demo_close', label: 'Pivot to Demo Close', target: 'demo_close' },
           { id: 'fit_call', label: 'Pivot to Fit Call', target: 'fit_call_close' },
@@ -317,7 +317,7 @@ export const livePaths: Record<string, LivePath> = {
         id: 'schedule',
         stage: 'Scheduling',
         goal: 'Lock in calendar.',
-        sayThis: "[Content Slot: Coordinate calendar time, confirm email for invite]",
+        sayThis: "Confirm the time, confirm the email for the invite, and log the next step in Notes before ending the call.",
         branchButtons: [
           { id: 'disposition', label: 'End Call', target: 'disposition' }
         ]
@@ -326,7 +326,7 @@ export const livePaths: Record<string, LivePath> = {
         id: 'disposition',
         stage: 'Disposition',
         goal: 'Log the call.',
-        sayThis: "Log the call outcome in the CRM.",
+        sayThis: "Log the call outcome in Quick Notes, then copy the clean summary into the Google Sheet tracker.",
         branchButtons: []
       }
     }
@@ -396,7 +396,7 @@ export const livePaths: Record<string, LivePath> = {
         id: 'end',
         stage: 'Disposition',
         goal: 'Log',
-        sayThis: "Log call.",
+        sayThis: "Log the call outcome in partner notes, then copy the clean summary into the Google Sheet tracker.",
         branchButtons: []
       }
     }
@@ -421,7 +421,7 @@ export const livePaths: Record<string, LivePath> = {
       step9: { id: 'step9', stage: 'Step 9 of 12', goal: 'Weak fit signs', sayThis: "Listen for: very low volume, no budget, unwilling to change workflow.", branchButtons: [{ id: 'next', label: 'Next', target: 'next' }, { id: 'back', label: 'Back', target: 'back' }] },
       step10: { id: 'step10', stage: 'Step 10 of 12', goal: 'Book Sales/Demo Zoom', sayThis: "\"Based on this, it makes sense to look at a full walkthrough. Can we book 45 mins next week?\"", branchButtons: [{ id: 'next', label: 'Next', target: 'next' }, { id: 'back', label: 'Back', target: 'back' }] },
       step11: { id: 'step11', stage: 'Step 11 of 12', goal: 'After-call message', sayThis: "Send calendar invite and quick recap email.", branchButtons: [{ id: 'next', label: 'Next', target: 'next' }, { id: 'back', label: 'Back', target: 'back' }] },
-      step12: { id: 'step12', stage: 'Step 12 of 12', goal: 'Quick notes', sayThis: "Log the answers to the questions in the CRM.", branchButtons: [{ id: 'back', label: 'Back', target: 'back' }, { id: 'done', label: 'Done', target: 'done' }] }
+      step12: { id: 'step12', stage: 'Step 12 of 12', goal: 'Quick notes', sayThis: "Log the answers in Quick Notes, then copy the clean summary into the Google Sheet tracker.", branchButtons: [{ id: 'back', label: 'Back', target: 'back' }, { id: 'done', label: 'Done', target: 'done' }] }
     }
   },
 

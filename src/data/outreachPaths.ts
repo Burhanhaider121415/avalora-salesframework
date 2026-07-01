@@ -61,7 +61,7 @@ export const outreachPaths: Record<string, OutreachPath> = {
         id: 'cta_stage',
         stage: 'Step 3: CTA & Subject Line',
         goal: 'Select the correct Subject Line and CTA ladder step.',
-        instruction: '[Content Slot: Subject Line Guidance & Email Chassis]. Make sure the CTA matches the temperature of the outreach.',
+        instruction: 'Use the approved subject line and CTA for the selected email scenario. Make sure the CTA matches the temperature of the outreach.',
         branchButtons: [{ id: 'next', label: 'Next: Final QA Review', target: 'qa' }, { id: 'back', label: 'Back: Angle', target: 'angle' }]
       },
       qa: {
@@ -117,7 +117,7 @@ export const outreachPaths: Record<string, OutreachPath> = {
         id: 'chassis',
         stage: 'Step 3: DM Chassis & Families',
         goal: 'Start a small conversation.',
-        instruction: '[Content Slot: DM Families]. Pick a micro-reply or opening that builds trust.',
+        instruction: 'Use the approved DM family for the current persona and pick a micro-reply or opening that builds trust.',
         branchButtons: [{ id: 'demo_bridge', label: 'Demo Bridge', target: 'demo_bridge' }, { id: 'back', label: 'Back', target: 'gate' }]
       },
       demo_bridge: {

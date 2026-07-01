@@ -140,8 +140,8 @@ export const partnerLibrary: LibraryItem[] = [
     primaryGoal: 'Explain the payout structure without using owner-facing pricing language or calling it "commission" upfront.',
     whenToUse: 'When partners ask "How do I know you will pay me?" or "What is in it for me?"',
     sections: [
-      { id: 's1', title: 'Explanation Logic', content: '[Content Slot: Payout details from source materials. Do not invent amounts.]' },
-      { id: 's2', title: 'Why not recurring?', content: '[Content Slot: Rationale for one-time vs recurring payout.]' }
+      { id: 's1', title: 'Explanation Logic', content: 'Use the approved source materials before quoting payout details. Do not invent amounts in-app.' },
+      { id: 's2', title: 'Why not recurring?', content: 'Use the approved payout reference for the rationale. Keep client pricing separate from partner thank-you language.' }
     ]
   },
   {
