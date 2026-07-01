@@ -1,68 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { checkGuardrails } from '../utils/languageGuardrails';
-
-type NoteContext = 'Gatekeeper Notes' | 'Owner Call Notes' | '15-Minute Fit Call Notes' | 'Sales/Demo Call Notes' | 'Email Notes' | 'Instagram Notes' | 'Referral Partner Notes';
+import type { NoteContext, Workspace } from '../types/app';
+import { loadNotesDraft, saveNotesDraft } from '../utils/notesStorage';
+import { buildNoteParagraph } from '../utils/notesOutput';
 
 interface NotesViewProps {
   initialContext?: NoteContext;
-  workspace?: 'medspa' | 'partner';
+  workspace?: Workspace;
   isSidePanel?: boolean;
 }
+const MEDSPA_CONTEXTS: NoteContext[] = ['gatekeeper', 'owner', 'fit_call', 'demo', 'email', 'ig'];
+const PARTNER_CONTEXTS: NoteContext[] = ['partner'];
 
-interface SavedNote {
-  id: string;
-  category: NoteContext;
-  date: string;
-  content: string;
-  contactName?: string;
-  mainPain?: string;
-  nextAction?: string;
+function getDefaultContext(workspace: Workspace, initialContext: NoteContext): NoteContext {
+  if (workspace === 'partner') {
+    return 'partner';
+  }
+
+  return initialContext === 'partner' ? 'gatekeeper' : initialContext;
 }
 
-const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Notes', workspace = 'medspa', isSidePanel = false }) => {
-  const [context, setContext] = useState<NoteContext>(initialContext);
+const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'gatekeeper', workspace = 'medspa', isSidePanel = false }) => {
+  const [context, setContext] = useState<NoteContext>(getDefaultContext(workspace, initialContext));
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [copyStatus, setCopyStatus] = useState('');
-  const [, setGuardrailWarnings] = useState<string[]>([]);
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [guardrailWarnings, setGuardrailWarnings] = useState<string[]>([]);
+  const [storageMessage, setStorageMessage] = useState('');
+  const hydratedRef = useRef(false);
+
+  const availableContexts = useMemo(
+    () => (workspace === 'partner' ? PARTNER_CONTEXTS : MEDSPA_CONTEXTS),
+    [workspace]
+  );
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('avalora_saved_notes');
-      if (stored) {
-        setSavedNotes(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.warn('localStorage not available or parse error');
+    const nextContext = getDefaultContext(workspace, initialContext);
+    if (!availableContexts.includes(nextContext)) {
+      setContext(availableContexts[0]);
+      return;
     }
-  }, []);
 
-  const persistNotes = (notes: SavedNote[]) => {
-    setSavedNotes(notes);
-    try {
-      localStorage.setItem('avalora_saved_notes', JSON.stringify(notes));
-    } catch (e) {
-      console.warn('Could not save to localStorage');
-    }
-  };
+    setContext(nextContext);
+  }, [availableContexts, initialContext, workspace]);
 
   useEffect(() => {
-    // Reset form when context changes if not editing
-    if (!editingNoteId) {
+    hydratedRef.current = false;
+    setGuardrailWarnings([]);
+    setCopyStatus('');
+
+    try {
+      setFormData(loadNotesDraft(window.localStorage, workspace, context));
+      setStorageMessage('');
+    } catch {
       setFormData({});
-      setGuardrailWarnings([]);
-      setCopyStatus('');
+      setStorageMessage('Note not saved locally. Copy it before leaving.');
+    } finally {
+      hydratedRef.current = true;
     }
-  }, [context, editingNoteId]);
+  }, [context, workspace]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      return;
+    }
+
+    try {
+      saveNotesDraft(window.localStorage, workspace, context, formData);
+      setStorageMessage('');
+    } catch {
+      setStorageMessage('Note not saved locally. Copy it before leaving.');
+    }
+  }, [context, formData, workspace]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const getFields = () => {
-    switch(context) {
-      case 'Gatekeeper Notes':
+    switch (context) {
+      case 'gatekeeper':
         return [
           { name: 'clinicName', label: 'Clinic Name' },
           { name: 'whoAnswered', label: 'Who Answered / Receptionist Name' },
@@ -74,7 +90,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'nextAction', label: 'Next Action' },
           { name: 'followUpDate', label: 'Follow-up Date', type: 'date' },
         ];
-      case 'Owner Call Notes':
+      case 'owner':
         return [
           { name: 'ownerName', label: 'Owner/Operator Name' },
           { name: 'personalization', label: 'Personalization Used' },
@@ -86,7 +102,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'nextStep', label: 'Next Step' },
           { name: 'followUpTime', label: 'Follow-up Time', type: 'date' },
         ];
-      case '15-Minute Fit Call Notes':
+      case 'fit_call':
         return [
           { name: 'whyNow', label: 'Why Now?' },
           { name: 'frontDeskIssue', label: 'Front Desk Bottleneck' },
@@ -96,7 +112,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'goodFit', label: 'Fit Quality', type: 'select', options: ['Good Fit', 'Weak Fit'] },
           { name: 'demoBooked', label: 'Sales/Demo Zoom Booked?', type: 'select', options: ['Yes', 'No'] },
         ];
-      case 'Sales/Demo Call Notes':
+      case 'demo':
         return [
           { name: 'exactPain', label: 'Exact Pain from Fit Call' },
           { name: 'demoScenario', label: 'Demo Scenario Used' },
@@ -108,7 +124,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'verbalYes', label: 'Verbal Yes?', type: 'select', options: ['Yes', 'No'] },
           { name: 'activationSent', label: 'Activation Packet Sent?', type: 'select', options: ['Yes', 'No'] },
         ];
-      case 'Email Notes':
+      case 'email':
         return [
           { name: 'clinicName', label: 'Clinic Name' },
           { name: 'researchAngle', label: 'Research Angle' },
@@ -117,7 +133,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'replyType', label: 'Reply Type' },
           { name: 'nextFollowUp', label: 'Next Follow-up', type: 'date' },
         ];
-      case 'Instagram Notes':
+      case 'ig':
         return [
           { name: 'clinicName', label: 'Clinic Name' },
           { name: 'igHandle', label: 'IG Handle' },
@@ -128,7 +144,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
           { name: 'demoPermission', label: 'Demo Permission?', type: 'select', options: ['Yes', 'No'] },
           { name: 'nextAction', label: 'Next Action' },
         ];
-      case 'Referral Partner Notes':
+      case 'partner':
         return [
           { name: 'partnerName', label: 'Partner Name' },
           { name: 'company', label: 'Company' },
@@ -144,90 +160,35 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
     }
   };
 
-  const generateParagraph = () => {
-    const fields = getFields();
-    let paragraph = `${new Date().toLocaleDateString()} — Context: ${context}. `;
-    
-    fields.forEach(f => {
-      const val = formData[f.name];
-      if (val) {
-        paragraph += `${f.label}: ${val}. `;
-      }
-    });
+  const currentFields = getFields();
 
-    return paragraph.trim();
-  };
+  const generatedText = useMemo(() => {
+    return buildNoteParagraph(context, currentFields, formData, new Date().toLocaleDateString());
+  }, [context, currentFields, formData]);
 
-  const handleCopyText = (text: string) => {
-    const warnings = checkGuardrails(text, workspace === 'partner');
+  const handleCopy = async () => {
+    const warnings = checkGuardrails(generatedText, workspace === 'partner');
     setGuardrailWarnings(warnings);
-    if (warnings.length > 0) {
-      setCopyStatus('Copied (warnings!)');
-    } else {
-      setCopyStatus('Copied clean!');
+
+    try {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        throw new Error('Clipboard unavailable');
+      }
+
+      await navigator.clipboard.writeText(generatedText);
+      setCopyStatus(warnings.length > 0 ? 'Copied (with warnings)' : 'Copied clean!');
+    } catch {
+      setCopyStatus('Copy manually from the text below.');
     }
-    navigator.clipboard.writeText(text);
-    setTimeout(() => setCopyStatus(''), 3000);
-  };
 
-  const handleSave = () => {
-    const text = generateParagraph();
-    if (!text || text.length < 20) return;
-
-    const contact = formData['clinicName'] || formData['ownerName'] || formData['partnerName'] || formData['igHandle'] || 'Unknown Contact';
-    const pain = formData['mainObjection'] || formData['painSignal'] || formData['frontDeskIssue'] || formData['exactPain'] || '';
-    const nextAction = formData['nextAction'] || formData['nextStep'] || formData['followUpDate'] || formData['nextFollowUp'] || '';
-
-    if (editingNoteId) {
-      const updated = savedNotes.map(n => 
-        n.id === editingNoteId 
-          ? { ...n, content: text, contactName: contact, mainPain: pain, nextAction: nextAction, category: context } 
-          : n
-      );
-      persistNotes(updated);
-      setEditingNoteId(null);
-    } else {
-      const newNote: SavedNote = {
-        id: Date.now().toString(),
-        category: context,
-        date: new Date().toLocaleString(),
-        content: text,
-        contactName: contact,
-        mainPain: pain,
-        nextAction: nextAction
-      };
-      persistNotes([newNote, ...savedNotes]);
-    }
-    
-    handleClear();
-  };
-
-  const handleEdit = (note: SavedNote) => {
-    setContext(note.category);
-    setEditingNoteId(note.id);
-    // Rough reverse mapping is not perfect since it's a paragraph, 
-    // but we'll let them just edit the raw text or start fresh.
-    // For a real app, we'd store the raw formData. For now, we'll just populate a 'custom' field if we can't parse it.
-    // (Skipping perfect reverse-parse for brevity, keeping simple).
-  };
-
-  const handleDelete = (id: string) => {
-    persistNotes(savedNotes.filter(n => n.id !== id));
+    window.setTimeout(() => setCopyStatus(''), 3000);
   };
 
   const handleClear = () => {
     setFormData({});
     setGuardrailWarnings([]);
     setCopyStatus('');
-    setEditingNoteId(null);
   };
-
-  const currentFields = getFields();
-
-  const categories: NoteContext[] = [
-    'Gatekeeper Notes', 'Owner Call Notes', '15-Minute Fit Call Notes', 
-    'Sales/Demo Call Notes', 'Email Notes', 'Instagram Notes', 'Referral Partner Notes'
-  ];
 
   return (
     <div className={`flex-col ${!isSidePanel ? 'desktop-notes-layout' : ''}`} style={{ padding: '24px 16px', gap: '24px', height: '100%', overflowY: 'auto' }}>
@@ -240,99 +201,117 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'Gatekeeper Note
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: isSidePanel ? 'column' : 'row', gap: '24px', flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {storageMessage && (
+        <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
+          <p style={{ fontSize: '14px', color: '#D32F2F', fontWeight: 600 }}>{storageMessage}</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: isSidePanel ? 'column' : 'row', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
+        {isSidePanel ? (
           <select 
             value={context} 
             onChange={(e) => setContext(e.target.value as NoteContext)}
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-light-gray)' }}
-            disabled={editingNoteId !== null}
           >
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {availableContexts.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+        ) : (
+          availableContexts.map((ctx) => (
+            <button
+              key={ctx}
+              className={`btn ${context === ctx ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '6px 12px', fontSize: '12px', whiteSpace: 'nowrap' }}
+              onClick={() => setContext(ctx)}
+            >
+              {ctx}
+            </button>
+          ))
+        )}
+      </div>
 
-          <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-light-gray)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {currentFields.map(f => (
-              <div key={f.name}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-deep-charcoal)' }}>
-                  {f.label}
-                </label>
-                {f.type === 'select' ? (
-                  <select 
-                    value={formData[f.name] || ''} 
-                    onChange={(e) => handleInputChange(f.name, e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #eee', backgroundColor: '#fafafa', fontSize: '14px' }}
-                  >
-                    <option value="">-- Select --</option>
-                    {f.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                ) : f.type === 'date' ? (
-                  <input 
-                    type="date"
-                    value={formData[f.name] || ''} 
-                    onChange={(e) => handleInputChange(f.name, e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #eee', backgroundColor: '#fafafa', fontSize: '14px' }}
-                  />
-                ) : (
-                  <input 
-                    type="text"
-                    value={formData[f.name] || ''} 
-                    onChange={(e) => handleInputChange(f.name, e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #eee', backgroundColor: '#fafafa', fontSize: '14px' }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div style={{ backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-soft-champagne)' }}>
-            <h3 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-muted-sage)', marginBottom: '8px' }}>Copy-to-Sheet Output</h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-deep-charcoal)', lineHeight: 1.5, minHeight: '60px', backgroundColor: '#fff', padding: '12px', borderRadius: '6px', border: '1px dashed #ccc' }}>
-              {generateParagraph() || "Start typing above..."}
-            </p>
-            <div className="flex gap-2" style={{ marginTop: '12px' }}>
-              <button className="btn btn-primary" style={{ flex: 1, minHeight: '40px', fontSize: '14px' }} onClick={handleSave}>
-                {editingNoteId ? 'Update Note' : 'Save Locally'}
-              </button>
-              <button className="btn btn-secondary" style={{ padding: '8px 16px', minHeight: '40px', fontSize: '14px' }} onClick={() => handleCopyText(generateParagraph())}>
-                {copyStatus ? copyStatus : 'Copy'}
-              </button>
+      <div style={{ display: 'flex', flexDirection: isSidePanel ? 'column' : 'row', gap: '24px', flex: 1 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+          {currentFields.map((field) => (
+            <div key={field.name}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '4px', color: 'var(--color-deep-charcoal)' }}>
+                {field.label}
+              </label>
+              {field.type === 'select' ? (
+                <select
+                  value={formData[field.name] || ''}
+                  onChange={(event) => handleInputChange(field.name, event.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
+                >
+                  <option value="">-- Select --</option>
+                  {field.options?.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              ) : field.type === 'date' ? (
+                <input
+                  type="date"
+                  value={formData[field.name] || ''}
+                  onChange={(event) => handleInputChange(field.name, event.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={formData[field.name] || ''}
+                  onChange={(event) => handleInputChange(field.name, event.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fafafa' }}
+                />
+              )}
             </div>
-            {editingNoteId && (
-               <button className="btn btn-secondary" style={{ marginTop: '8px', width: '100%', minHeight: '40px', fontSize: '14px' }} onClick={handleClear}>
-                 Cancel Edit
-               </button>
-            )}
-          </div>
+          ))}
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', borderTop: isSidePanel ? '1px solid var(--color-light-gray)' : 'none', paddingTop: isSidePanel ? '16px' : '0' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-deep-charcoal)' }}>Saved Notes</h3>
-          {savedNotes.length === 0 ? (
-            <p style={{ fontSize: '13px', color: 'var(--color-muted-sage)' }}>No notes saved yet. Saved notes persist in this browser.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', flex: 1 }}>
-              {savedNotes.map(note => (
-                <div key={note.id} style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-light-gray)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-muted-sage)', textTransform: 'uppercase' }}>{note.category}</span>
-                    <span style={{ fontSize: '11px', color: '#999' }}>{note.date}</span>
-                  </div>
-                  {(note.contactName || note.mainPain) && (
-                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-deep-charcoal)' }}>
-                      {note.contactName} {note.mainPain && ` - ${note.mainPain}`}
-                    </div>
-                  )}
-                  <p style={{ fontSize: '12px', color: '#555', marginBottom: '12px', lineHeight: 1.4 }}>{note.content}</p>
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                    <button onClick={() => handleCopyText(note.content)} style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}>Copy</button>
-                    <button onClick={() => handleEdit(note)} style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => handleDelete(note.id)} style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1px solid #f8d7da', color: '#721c24', background: '#fff', cursor: 'pointer' }}>Delete</button>
-                  </div>
-                </div>
-              ))}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {guardrailWarnings.length > 0 && (
+            <div style={{ backgroundColor: '#FDECEA', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #E57373' }}>
+              <h4 style={{ color: '#D32F2F', fontWeight: 600, marginBottom: '8px' }}>Language Guardrail Warning</h4>
+              <p style={{ fontSize: '14px', color: '#D32F2F', marginBottom: '8px' }}>Your note contains forbidden or risky words:</p>
+              <ul style={{ fontSize: '14px', color: '#D32F2F', paddingLeft: '20px' }}>
+                {guardrailWarnings.map((warning, index) => <li key={index}>{warning}</li>)}
+              </ul>
+              <p style={{ fontSize: '12px', color: '#D32F2F', marginTop: '8px', fontStyle: 'italic' }}>
+                Please rewrite these terms before pasting into any client-facing system or official sheet if they are visible to others.
+              </p>
             </div>
           )}
+
+          <div style={{ backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-accent-amber)' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>Generated Note Output</h3>
+            <textarea
+              readOnly
+              value={generatedText || 'Start typing above to generate your note...'}
+              style={{
+                width: '100%',
+                minHeight: '100px',
+                fontSize: '14px',
+                color: 'var(--color-slate-grey)',
+                lineHeight: 1.5,
+                backgroundColor: '#fff',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px dashed var(--color-border)',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+              }}
+            />
+
+            {copyStatus && (
+              <p style={{ fontSize: '12px', color: 'var(--color-deep-charcoal)', marginTop: '8px' }}>{copyStatus}</p>
+            )}
+
+            <div className="flex gap-2" style={{ marginTop: '16px' }}>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => void handleCopy()}>
+                Copy Paragraph
+              </button>
+              <button className="btn btn-secondary" style={{ padding: '12px' }} onClick={handleClear}>
+                Clear
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

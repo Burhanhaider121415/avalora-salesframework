@@ -63,7 +63,7 @@ export const objectionBank: Objection[] = [
     whatItMeans: "I don't want to talk to you, but I'm slightly curious or just blowing you off.",
     context: 'email',
     workspace: 'medspa',
-    response: "[Content Slot: Send Info Email Reply Handler. Do not invent copy.]",
+    response: "Send the approved short demo or overview asset, keep the CTA light, and set a clear follow-up step.",
     whyItWorks: "Provides a lightweight asset (like a 2-min demo video) instead of pushing for a call immediately.",
     relatedEmailVersion: 'email_mode',
     keywords: ['send info', 'send information', 'brochure', 'pdf']
@@ -75,7 +75,7 @@ export const objectionBank: Objection[] = [
     whatItMeans: "What is my financial incentive?",
     context: 'partner',
     workspace: 'partner',
-    response: "We offer a partner thank-you payout for successful introductions. [Content Slot: Specific payout explanation].",
+    response: "We offer a partner thank-you payout for successful introductions. Use the approved partner payout reference before quoting details.",
     whyItWorks: "Keeps it professional. Reframes 'commission' as a 'thank-you payout'.",
     doNotSay: "Commission (in owner-facing contexts)",
     relatedLibraryId: 'lib_pt_payout',
