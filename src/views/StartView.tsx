@@ -5,9 +5,10 @@ interface StartViewProps {
   onLiveModeSelect: (scenario: string | null) => void;
   onOutreachModeSelect: (modeId: string) => void;
   onOpenSafety: () => void;
+  onOpenCadence: () => void;
 }
 
-const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOutreachModeSelect, onOpenSafety }) => {
+const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOutreachModeSelect, onOpenSafety, onOpenCadence }) => {
   return (
     <div className="flex-col gap-6 pb-6">
       <div className="mb-4">
@@ -58,6 +59,9 @@ const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOu
 
       <div className="flex-col gap-4 mt-6">
         <h3 className="label-text">Quick Links</h3>
+        <button className="card btn-secondary" onClick={onOpenCadence} style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600 }}>8-Touch Cadence</div>
+        </button>
         <button className="card btn-secondary" onClick={onOpenSafety} style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
           <div style={{ fontSize: '16px', fontWeight: 600 }}>Positioning / Safety Rules</div>
         </button>

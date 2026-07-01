@@ -4,9 +4,10 @@ import { outreachPaths, type ActionTarget } from '../data/outreachPaths';
 interface OutreachViewProps {
   modeId: string; // 'email_mode' | 'ig_mode'
   onClose: () => void;
+  onOpenNotes?: () => void;
 }
 
-const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose }) => {
+const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose, onOpenNotes }) => {
   const path = outreachPaths[modeId];
   const [currentNodeId, setCurrentNodeId] = useState<string>(path.initialNode);
   const [history, setHistory] = useState<string[]>([]);
@@ -118,6 +119,27 @@ const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose }) => {
             </button>
           );
         })}
+      </div>
+
+      {/* Sticky Action Bar */}
+      <div style={{
+        position: 'fixed',
+        bottom: '80px',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        padding: '12px 16px',
+        borderTop: '1px solid var(--color-border)',
+        display: 'flex',
+        gap: '8px',
+        justifyContent: 'center',
+        zIndex: 10
+      }}>
+        {onOpenNotes && (
+          <button className="btn" onClick={onOpenNotes} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+            Quick Notes
+          </button>
+        )}
       </div>
 
     </div>

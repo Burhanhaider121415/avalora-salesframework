@@ -6,12 +6,12 @@ interface LiveViewProps {
   scenario: string | null;
   onReset: () => void;
   onGoToLibrary: () => void;
+  onOpenNotes?: () => void;
 }
 
-const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary }) => {
+const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary, onOpenNotes }) => {
   const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(scenario);
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
-  const [isNoteDrawerOpen, setIsNoteDrawerOpen] = useState(false);
   
   // Update state when props change
   useEffect(() => {
@@ -138,88 +138,29 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
         </div>
       </div>
 
-      {/* Quick Actions Sticky Bar Placeholder */}
+      {/* Sticky Action Bar */}
       <div style={{
         position: 'fixed',
         bottom: '80px',
-        left: '0',
-        right: '0',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
         padding: '12px 16px',
-        backgroundColor: 'var(--color-warm-ivory)',
         borderTop: '1px solid var(--color-border)',
         display: 'flex',
         gap: '8px',
         justifyContent: 'space-between',
         zIndex: 10
       }}>
-        <button className="btn" onClick={() => setIsNoteDrawerOpen(true)} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
-          Quick Notes
-        </button>
+        {onOpenNotes && (
+          <button className="btn" onClick={onOpenNotes} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
+            Quick Notes
+          </button>
+        )}
         <button className="btn" onClick={onGoToLibrary} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
           Full Framework
         </button>
       </div>
-
-      {/* Note Drawer Overlay */}
-      {isNoteDrawerOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: '80px',
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          zIndex: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--color-warm-ivory)',
-            padding: '24px 16px',
-            borderTopLeftRadius: '16px',
-            borderTopRightRadius: '16px',
-            height: '70vh',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
-          }}>
-            <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600 }}>Quick Notes (Placeholder)</h3>
-              <button onClick={() => setIsNoteDrawerOpen(false)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
-            </div>
-            
-            <div className="flex-col gap-4" style={{ overflowY: 'auto', paddingBottom: '20px' }}>
-              <div>
-                <label className="label-text">Situation/Outcome</label>
-                <select style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fff' }}>
-                  <option>Got VM</option>
-                  <option>Transferred to Owner</option>
-                  <option>Gatekeeper Blocked</option>
-                  <option>Booked Fit Call</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="label-text">Contact Name</label>
-                <input type="text" placeholder="Name" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fff' }} />
-              </div>
-
-              <div>
-                <label className="label-text">Direct Email / Number</label>
-                <input type="text" placeholder="Email or Phone" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fff' }} />
-              </div>
-
-              <div>
-                <label className="label-text">Freeform Notes</label>
-                <textarea rows={4} placeholder="Type notes here..." style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: '#fff', resize: 'none' }}></textarea>
-              </div>
-
-              <button className="btn btn-primary" style={{ marginTop: '16px' }} onClick={() => setIsNoteDrawerOpen(false)}>
-                Save Note (Demo)
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
