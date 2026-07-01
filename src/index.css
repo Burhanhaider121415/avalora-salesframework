@@ -138,6 +138,11 @@ p {
   border-color: var(--color-deep-charcoal);
 }
 
+.btn:focus-visible, .nav-item:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--color-deep-charcoal);
+  outline-offset: 2px;
+}
+
 .btn-accent-amber {
   background-color: var(--color-soft-amber);
   color: var(--color-white);
