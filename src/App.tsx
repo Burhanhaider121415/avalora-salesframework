@@ -14,7 +14,7 @@ function App() {
   const [activeWorkspace, setActiveWorkspace] = useState<'medspa' | 'partner'>('medspa');
   const [activeLiveScenario, setActiveLiveScenario] = useState<string | null>(null);
 
-  const handleStartMode = (scenarioId: string, workspaceId: 'medspa' | 'partner') => {
+  const handleStartMode = (scenarioId: string | null, workspaceId: 'medspa' | 'partner') => {
     setActiveWorkspace(workspaceId);
     setActiveLiveScenario(scenarioId);
     setCurrentMode('live');
