@@ -919,7 +919,7 @@ export const livePaths: Record<string, LivePath> = {
         },
         {
           "id": "push_back",
-          "label": "If They Push Back",
+          "label": "Not Interested / Push Back",
           "target": "push_back"
         },
         {
@@ -928,6 +928,7 @@ export const livePaths: Record<string, LivePath> = {
           "target": "clean_transfer"
         },
         { "id": "right_person", "label": "Right person identified", "target": "clean_transfer" },
+        { "id": "transferred", "label": "Transferred", "target": "partner_answers" },
         { "id": "wrong_contact", "label": "Wrong contact", "target": "disposition" }
       ]
     },
@@ -1081,6 +1082,11 @@ export const livePaths: Record<string, LivePath> = {
       "sayThis": "\"Of course.\n\nAvalora is a bilingual call and booking recovery company for Miami med spas.\n\nThe simple version is this: when a clinic misses a call, responds late, gets an after-hours inquiry, or has a booking request sitting somewhere, Avalora helps capture that patient before they go cold or call another clinic.\n\nWe support the front desk. We do not replace the receptionist.\n\nThe clinic stays in control with approved FAQs, booking rules, and handoff preferences.\"\n\nThen ask:\n\"The reason I reached out to you is the partner side. Would it be worth hearing the short demo first, just to see if it is something you'd ever want to introduce?\"",
       "branchButtons": [
         {
+          "id": "partner_thank_you",
+          "label": "Partner Thank-You Details",
+          "target": "partner_thank_you"
+        },
+        {
           "id": "demo_close",
           "label": "To Demo Close",
           "target": "demo_close"
@@ -1120,6 +1126,11 @@ export const livePaths: Record<string, LivePath> = {
       "sayThis": "Two things.\nFirst, it gives you a useful resource for the right clinic without asking you to sell or support anything.\nSecond, if a clinic you introduce becomes a paid Avalora client, we offer a one-time partner thank-you after the first payment clears.\nBut the first question is whether the demo is strong enough that you would feel comfortable attaching your name to it.\nWould you like to hear it first?",
       "branchButtons": [
         {
+          "id": "partner_thank_you",
+          "label": "Partner Thank-You Details",
+          "target": "partner_thank_you"
+        },
+        {
           "id": "demo_close",
           "label": "To Demo Close",
           "target": "demo_close"
@@ -1156,8 +1167,23 @@ export const livePaths: Record<string, LivePath> = {
       "id": "demo_close",
       "stage": "Main Demo Close",
       "goal": "Secure the demo.",
-      "sayThis": "\"The easiest next step is not for me to over-explain it.\n\nThe demo is short, and you can hear how Avalora handles a real med spa inquiry, captures the booking intent, and hands it off to staff.\n\nWould it be worth hearing that first, so you can decide if this is something you'd feel comfortable mentioning to the right clinic?\"\n\nIf They Say Yes:\n\"Perfect. I can either send it to you or walk you through it quickly. Which is easier?\"\n\nIf Live Walkthrough:\n\"It takes around 10 minutes. Would later today or tomorrow work better?\"\n\nIf Sending:\n\"I'll send the demo with a short note. After you hear it, if one clinic comes to mind, we can talk about a simple intro. If not, no pressure.\"",
+      "sayThis": "\"The easiest next step is not for me to over-explain it.\n\nThe demo is short, and you can hear how Avalora handles a real med spa inquiry, captures the booking intent, and hands it off to staff.\n\nWould it be worth hearing that first, so you can decide if this is something you'd feel comfortable mentioning to the right clinic?\"\n\nIf They Say Yes:\n\"Perfect. I can either send it to you or walk you through it quickly. Which is easier?\"\n\nIf Live Walkthrough:\n\"It takes around 10 minutes. Would later today or tomorrow work better?\"\n\nIf Sending:\n\"I'll send the demo with a short note. What’s the best email or number for you? I’ll follow up tomorrow or the following day after you’ve had a chance to hear it.\"",
       "branchButtons": [
+        {
+          "id": "send_demo_follow_up",
+          "label": "Send Demo / Confirm Follow-Up",
+          "target": "send_demo_follow_up"
+        },
+        {
+          "id": "ask_one_introduction",
+          "label": "Ask for One Introduction",
+          "target": "ask_one_introduction"
+        },
+        {
+          "id": "partner_voicemail",
+          "label": "Leave Voicemail",
+          "target": "partner_voicemail"
+        },
         {
           "id": "objections",
           "label": "Go to Objections",
@@ -1170,7 +1196,70 @@ export const livePaths: Record<string, LivePath> = {
       "stage": "Partner Objections",
       "goal": "Handle objections.",
       "sayThis": "Use the selectable objection that matches what they said.\n\nWe don’t refer vendors: I understand, and I wouldn’t want you referring anyone blindly. That’s exactly why the demo comes first. If it feels weak or unsuitable for your clients, you should not introduce it.\n\nWill this compete with what we do? Avalora supports what you already do. We sit around the inquiry-to-booking gap, not in place of your service.\n\nOur clients already have receptionists: Absolutely. Avalora is designed to support reception, not replace it.\n\nIs this just an AI receptionist? Avalora uses AI-supported voice and workflow technology, but it is not deployed as a generic AI receptionist. The clinic approves answers, boundaries, escalation rules, and workflow.\n\nOur clients use a CRM: Avalora does not replace the CRM; it catches the missed call, DM, form, or after-hours request before it disappears.\n\nIs this safe for patient communication? Avalora does not diagnose, prescribe, recommend treatment, or decide whether someone is a candidate.\n\nSend information: The demo is more useful than a brochure. What is the best email or number, and should I follow up tomorrow or the following day?\n\nIf they ask about payment: If referral compensation is allowed on your side, we offer a one-time partner thank-you after the first payment clears. I’ll confirm the current partner table in writing before any introduction.",
-      "branchButtons": []
+      "branchButtons": [
+        {
+          "id": "partner_thank_you",
+          "label": "Partner Thank-You Details",
+          "target": "partner_thank_you"
+        },
+        {
+          "id": "send_demo_follow_up",
+          "label": "Send Demo / Confirm Follow-Up",
+          "target": "send_demo_follow_up"
+        }
+      ]
+    },
+    "partner_thank_you": {
+      "id": "partner_thank_you",
+      "stage": "Partner Thank-You Explanation",
+      "goal": "Explain the structure only after interest or a payment question.",
+      "sayThis": "\"If a clinic is introduced through you and becomes a paid Avalora client, we send a one-time partner thank-you after the first payment clears.\n\nThe current structure is:\nEntry Recovery: $125\nStarter: $225\nCore: $350\nGrowth: $500\n\nYour role is only the introduction. Avalora handles the demo, onboarding, setup, call handling, QA, support, workflow updates, and client success.\"\n\nThen say:\n\"The first step is still just hearing the demo and deciding if you would feel comfortable introducing it.\"",
+      "branchButtons": [
+        {
+          "id": "demo_close",
+          "label": "Return to Demo Close",
+          "target": "demo_close"
+        }
+      ]
+    },
+    "ask_one_introduction": {
+      "id": "ask_one_introduction",
+      "stage": "Ask for One Introduction",
+      "goal": "Ask for one appropriate connection without pressure.",
+      "sayThis": "\"If the demo felt strong enough, I’d rather start with one clinic where the problem is obvious—not ask you for a list.\n\nIs there one owner or operator who regularly deals with missed calls, after-hours inquiries, or slow booking follow-up?\"\n\nIf they hesitate:\n\"No pressure. I can write a very short introduction message you can forward, and you can decide later if anyone comes to mind.\"",
+      "branchButtons": [
+        {
+          "id": "send_demo_follow_up",
+          "label": "Confirm Follow-Up",
+          "target": "send_demo_follow_up"
+        }
+      ]
+    },
+    "send_demo_follow_up": {
+      "id": "send_demo_follow_up",
+      "stage": "Send Demo and Follow Up",
+      "goal": "Confirm delivery details and the next touchpoint.",
+      "sayThis": "\"Perfect. I’ll send the short demo with a quick explanation and a simple line you can forward if someone comes to mind.\n\nWhat’s the best email or number for you?\n\nShould I follow up tomorrow or the following day?\"",
+      "branchButtons": [
+        {
+          "id": "disposition",
+          "label": "End / Log Follow-Up",
+          "target": "disposition"
+        }
+      ]
+    },
+    "partner_voicemail": {
+      "id": "partner_voicemail",
+      "stage": "Voicemail",
+      "goal": "Leave a brief, useful message.",
+      "sayThis": "\"Hi [First Name], this is Burhan with Avalora.\n\nI’m reaching out because you work close to med spas, and I thought a short demo might be useful to you as a partner resource.\n\nAvalora helps Miami clinics recover missed calls, after-hours inquiries, and booking requests without replacing their front desk.\n\nI’ll send a brief note as well. Again, Burhan with Avalora.\"",
+      "branchButtons": [
+        {
+          "id": "send_demo_follow_up",
+          "label": "Send Follow-Up",
+          "target": "send_demo_follow_up"
+        }
+      ]
     }
   }
 }

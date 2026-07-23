@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { medSpaLibrary, partnerLibrary } from '../data/libraryData';
 import type { LibrarySection } from '../data/libraryData';
 import { cadenceSteps } from '../data/cadenceData';
+import { updatedMedSpaLibrary } from '../data/updatedLibraryData';
 
 interface LibraryViewProps {
   workspace: 'medspa' | 'partner';
@@ -165,7 +166,9 @@ const LibraryView: React.FC<LibraryViewProps> = ({ workspace }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
-  const activeLibrary = workspace === 'medspa' ? medSpaLibrary : partnerLibrary;
+  const activeLibrary = workspace === 'medspa'
+    ? [...updatedMedSpaLibrary, ...medSpaLibrary.filter((item) => item.id !== 'lib_doc_0')]
+    : partnerLibrary;
 
   const filteredLibrary = activeLibrary.filter(item => 
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
