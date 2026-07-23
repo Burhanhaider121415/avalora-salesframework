@@ -872,7 +872,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Main Gatekeeper Opener",
       "goal": "Get to the decision-maker or get the best way to send the short demo.",
-      "sayThis": "\"Hey, maybe you can help me out for a second.\n\nI'm trying to reach [Name]. This is Burhan with Avalora.\n\nIt's not a patient call or anything urgent. I'm reaching out because we're building a small referral partner circle around Miami med spas and aesthetic clinics, and I wanted to get a short demo in front of [Name] to see if it's relevant to their network.\n\nWould [Name] be the right person for that?\"",
+      "sayThis": "Hi, this is Burhan with Avalora. Maybe you can help me for a moment.\nI’m trying to reach [Name] regarding a short partner-resource conversation for the aesthetic space.\nWould [Name] be the right person for that?",
       "branchButtons": [
         {
           "id": "what_is_this",
@@ -915,7 +915,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "what_is_this",
       "stage": "Objection: What is this?",
       "goal": "Brief context, pivot to demo.",
-      "sayThis": "\"Of course.\n\nAvalora helps Miami med spas recover missed calls, after-hours inquiries, and booking requests before patients go cold.\n\nBut I'm not calling to sell [Name] anything. It's more of a partner conversation — if they know clinics where this is useful, there's a simple partner thank-you when an introduced clinic becomes a paid client.\n\nThe first step is just getting the short demo in front of them.\"\n\nThen ask:\n\"Would it be best to transfer me, or is there a better email for that?\"",
+      "sayThis": "Of course. Avalora helps Miami med spas recover missed calls, after-hours inquiries, and booking requests before patients go cold.\nI’m not asking for clinic introductions. The first step is simply getting the short demo in front of [Name] so they can decide whether it is relevant.\nWould it be best to transfer me, or is there a better email for that?",
       "branchButtons": [
         {
           "id": "back",
@@ -1014,7 +1014,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Main Opener",
       "goal": "Earn 20 seconds.",
-      "sayThis": "\"Hey [Name], it's Burhan with Avalora.\n\nI know I'm calling unexpectedly — can I give you the 20-second reason I reached out, and then you can tell me if it's worth continuing?\"\n\n(Pause. If yes:)\n\n\"I came across [personalized detail about their company / website / service], and it looks like you already sit close to the aesthetic or med spa world.\n\nAvalora helps Miami med spas recover missed calls, after-hours inquiries, and booking requests their front desk can't always catch fast enough.\n\nThe reason I called you specifically is we're building a small referral partner circle.\n\nYou would not have to sell anything, manage anything, or support the clinic. If you ever introduce a clinic that becomes a paid Avalora client, we send a one-time partner thank-you.\n\nI'm not asking for names on this call. I just wanted to show you the short demo first, so you can decide if this is even something you'd feel comfortable mentioning to the right clinic.\n\nDoes that make sense?\"",
+      "sayThis": "Hey [Name], it’s Burhan with Avalora. I know I’m calling unexpectedly—can I give you the quick reason I reached out, and then you can tell me if it’s relevant?\n\nI came across [personalized detail], and it looks like you already sit close to the aesthetic or med spa world.\nAvalora helps Miami med spas recover missed calls, after-hours inquiries, and booking requests their front desk cannot always catch fast enough.\nI’m building a small group of trusted partner relationships around that problem.\nI’m not asking for clinic names or introductions today. I’d only like to show you the short demo first, so you can decide whether it is something you would be comfortable mentioning later.\nDoes that make sense?",
       "branchButtons": [
         {
           "id": "what_is_avalora",
@@ -1096,7 +1096,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "whats_in_it",
       "stage": "Question: What is in it for me?",
       "goal": "Share the upside without leading with it.",
-      "sayThis": "\"Two things.\n\nFirst, this can make you useful to the right clinic because missed calls and slow follow-up are real revenue leaks.\n\nSecond, if a clinic is introduced through you and becomes a paid Avalora client, we send a one-time partner thank-you after the first payment clears.\n\nBut I do not want to lead with the money. The first thing is whether you would actually feel comfortable putting your name near this.\n\nThat is why the demo comes first.\"\n\nThen ask:\n\"Want me to show you how it sounds?\"",
+      "sayThis": "First, this can make you useful to the right clinic because missed calls and slow follow-up are real revenue leaks.\nThe important part is whether you would actually feel comfortable putting your name near the service. That is why the demo comes first.\nWant me to show you how it sounds?",
       "branchButtons": [
         {
           "id": "demo_close",
@@ -1122,7 +1122,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "qualification",
       "stage": "Light Qualification",
       "goal": "Check if they are a real partner candidate.",
-      "sayThis": "\"Do you mostly work around med spas, aesthetic clinics, injectors, or broader healthcare practices?\"\n\n\"Are the clinics you come across usually trying to grow patient volume?\"\n\n\"Do you ever hear clinics mention missed calls, front-desk overload, or slow lead follow-up?\"\n\n\"Would you be open to mentioning a resource like this if the demo felt strong and the fit was obvious?\"\n\n\"Are you personally allowed to receive referral thank-yous, or does your company have a policy against that?\"\n\nIf they answer positively, move to demo.",
+      "sayThis": "Ask only one or two questions.\nDo you mostly work around med spas, aesthetic clinics, injectors, or broader healthcare practices?\nDo you ever hear clinics mention missed calls, front-desk overload, or slow lead follow-up?\nWould you be open to mentioning a resource like this if the demo felt strong and the fit was obvious?\nIf they answer positively, move to the demo.",
       "branchButtons": [
         {
           "id": "demo_close",
