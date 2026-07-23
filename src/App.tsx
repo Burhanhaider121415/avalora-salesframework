@@ -51,6 +51,7 @@ function App() {
   const [activeLiveScenario, setActiveLiveScenario] = useState<string | null>(initialRoute.liveScenario);
   const [activeOutreachMode, setActiveOutreachMode] = useState<string | null>(initialRoute.outreachMode);
   const [activeNotesContext, setActiveNotesContext] = useState<NoteContext>(initialRoute.notesContext);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -126,6 +127,7 @@ function App() {
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
+                 onOpenLibrary={openLibrary}
                />;
       case 'live':
         return (
@@ -189,18 +191,21 @@ function App() {
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
+                 onOpenLibrary={openLibrary}
                />;
     }
   };
 
   return (
     <div className="desktop-layout">
-      <SidebarNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />
+      {sidebarOpen && <SidebarNav currentMode={currentMode as Mode} setMode={(m) => setCurrentMode(m)} />}
       
       <div className="app-container main-content-wrapper">
         <TopBar 
           currentMode={currentMode === 'outreach' || currentMode === 'safety' || currentMode === 'cadence' || currentMode === 'notFound' ? 'start' : currentMode} 
           workspace={activeWorkspace} 
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
           onWorkspaceToggle={() => {
             const nextWorkspace = activeWorkspace === 'medspa' ? 'partner' : 'medspa';
             setActiveWorkspace(nextWorkspace);

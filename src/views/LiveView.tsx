@@ -100,6 +100,9 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
   const path = livePaths[currentScenarioId];
   const node = currentNodeId ? path.nodes[currentNodeId] : null;
   if (!node) return <div className="card">The selected call step is unavailable.</div>;
+  const nodeIds = Object.keys(path.nodes);
+  const currentStepIndex = nodeIds.indexOf(node.id);
+  const nextStep = path.nodes[nodeIds[currentStepIndex + 1]];
   const outcomes = node.branchButtons.filter((button) => button.target !== 'back');
   const notesContext = getNotesContext(currentScenarioId, workspace);
 
@@ -115,7 +118,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
 
   return (
     <div className="flex-col gap-4" style={{ paddingBottom: '112px' }}>
-      <div className="live-step-progress"><span>{path.name}</span></div>
+      <div className="live-step-progress"><span>{path.name}</span><span className="step-indicator">Step {currentStepIndex + 1} of {nodeIds.length}</span></div>
       <div>
         <span className="label-text">Stage</span>
         <h2 style={{ fontSize: '25px', marginTop: '4px' }}>{node.stage}</h2>
@@ -130,6 +133,10 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
         <p className="script-text" style={{ whiteSpace: 'pre-wrap', marginTop: '8px' }}>{node.sayThis}</p>
         <button className="btn btn-secondary" onClick={() => void copyScript()} style={{ width: 'auto', minHeight: '38px', marginTop: '16px', fontSize: '13px' }}>{copyStatus || 'Copy'}</button>
       </div>
+      <div className="live-nav-row" aria-label="Framework step navigation">
+        <button className="btn-back-step" onClick={() => handleBranch('back')} disabled={history.length === 0}>← Back</button>
+        <button className="btn-next-step" onClick={() => handleBranch('next')} disabled={!nextStep}>{nextStep ? `Next Step: ${nextStep.stage}` : 'Final Step' } →</button>
+      </div>
       {node.instructions?.length ? (
         <details className="card" style={{ padding: '16px' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Listen for / guidance</summary>
@@ -141,7 +148,6 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
           <h3>What happened?</h3>
           <div className="flex-col gap-2">
             {outcomes.map((button) => {
-              const nodeIds = Object.keys(path.nodes);
               const nextNode = button.target === 'next' ? path.nodes[nodeIds[nodeIds.indexOf(node.id) + 1]] : null;
               const label = button.target === 'next' && nextNode ? `Next: ${nextNode.stage}` : button.label;
               return <button key={button.id} className="btn btn-secondary" onClick={() => handleBranch(button.target)} style={{ justifyContent: 'flex-start', textAlign: 'left' }}>{label}</button>;
@@ -149,7 +155,6 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
           </div>
         </section>
       )}
-      {history.length > 0 && <button className="btn btn-secondary" onClick={() => handleBranch('back')}>Back to previous situation</button>}
       <div style={{ position: 'sticky', bottom: 0, display: 'flex', gap: '8px', background: 'var(--color-warm-ivory)', padding: '12px 0', borderTop: '1px solid var(--color-light-gray)' }}>
         <button className="btn btn-secondary" onClick={() => setNotesOpen(true)}>Quick Notes</button>
         <button className="btn btn-secondary" onClick={onGoToLibrary}>Full Framework</button>

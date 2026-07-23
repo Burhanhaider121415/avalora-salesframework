@@ -6,9 +6,11 @@ interface TopBarProps {
   workspace: 'medspa' | 'partner';
   onWorkspaceToggle: () => void;
   onReset: () => void;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ currentMode, workspace, onWorkspaceToggle, onReset }) => {
+export const TopBar: React.FC<TopBarProps> = ({ currentMode, workspace, onWorkspaceToggle, onReset, sidebarOpen, onToggleSidebar }) => {
   const getModeTitle = () => {
     switch (currentMode) {
       case 'start': return 'Avalora Sales Desk';
@@ -26,6 +28,9 @@ export const TopBar: React.FC<TopBarProps> = ({ currentMode, workspace, onWorksp
   return (
     <div className="top-bar">
       <div className="flex items-center gap-4">
+        <button onClick={onToggleSidebar} className="sidebar-toggle" aria-label={sidebarOpen ? 'Hide navigation menu' : 'Show navigation menu'}>
+          {sidebarOpen ? 'Hide menu' : 'Show menu'}
+        </button>
         {currentMode !== 'start' && (
           <button onClick={onReset} className="label-text" style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
             ← Back
