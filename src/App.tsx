@@ -124,7 +124,7 @@ function App() {
                  onLiveModeSelect={handleLiveModeSelect} 
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
-                 onOpenCadence={() => setCurrentMode('cadence')}
+                 onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
                />;
       case 'live':
@@ -187,7 +187,7 @@ function App() {
                  onLiveModeSelect={handleLiveModeSelect} 
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
-                 onOpenCadence={() => setCurrentMode('cadence')}
+                 onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
                />;
     }

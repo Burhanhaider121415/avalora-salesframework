@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { medSpaLibrary, partnerLibrary } from '../data/libraryData';
 import type { LibrarySection } from '../data/libraryData';
+import { cadenceSteps } from '../data/cadenceData';
 
 interface LibraryViewProps {
   workspace: 'medspa' | 'partner';
@@ -200,6 +201,15 @@ const LibraryView: React.FC<LibraryViewProps> = ({ workspace }) => {
           fontSize: '16px'
         }}
       />
+
+      {workspace === 'medspa' && !searchTerm && (
+        <details className="framework-section-card" open>
+          <summary style={{ cursor: 'pointer', fontSize: '18px', fontWeight: 600 }}>8-Touch Cadence</summary>
+          <div className="framework-content" style={{ marginTop: '14px' }}>
+            {cadenceSteps.map((step) => <p key={step.touch}><strong>Touch {step.touch} · {step.day} · {step.channel}:</strong> {step.action}</p>)}
+          </div>
+        </details>
+      )}
 
       <div className="flex-col" style={{ gap: '16px' }}>
         {filteredLibrary.map(item => (
