@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface StartViewProps {
   workspace: 'medspa' | 'partner';
@@ -10,6 +10,7 @@ interface StartViewProps {
 }
 
 const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOutreachModeSelect, onOpenSafety, onOpenCadence, onOpenNotes }) => {
+  const [showCallChoices, setShowCallChoices] = useState(false);
   return (
     <div className="flex-col gap-6 pb-6">
       <div className="mb-4">
@@ -21,10 +22,16 @@ const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOu
         <div className="flex-col gap-4">
           <h3 className="label-text">Med Spa Outreach</h3>
           
-          <button className="card btn-secondary" onClick={() => onLiveModeSelect('medspa_gatekeeper')} style={{ textAlign: 'left', padding: '16px' }}>
+          <button className="card btn-secondary" onClick={() => setShowCallChoices((visible) => !visible)} style={{ textAlign: 'left', padding: '16px' }}>
             <div style={{ fontSize: '18px', fontWeight: 600 }}>Call a Med Spa</div>
             <p style={{ color: 'var(--color-muted-sage)', fontSize: '14px', marginTop: '4px' }}>Receptionist or Owner cold call</p>
           </button>
+          {showCallChoices && (
+            <div className="flex gap-2" style={{ paddingLeft: '8px' }}>
+              <button className="btn btn-secondary" onClick={() => onLiveModeSelect('medspa_gatekeeper')}>Receptionist / Gatekeeper</button>
+              <button className="btn btn-secondary" onClick={() => onLiveModeSelect('medspa_owner')}>Owner / Operator</button>
+            </div>
+          )}
 
           <button className="card btn-secondary" onClick={() => onOutreachModeSelect('email_mode')} style={{ textAlign: 'left', padding: '16px' }}>
             <div style={{ fontSize: '18px', fontWeight: 600 }}>Send Email</div>
