@@ -6,9 +6,10 @@ interface StartViewProps {
   onOutreachModeSelect: (modeId: string) => void;
   onOpenSafety: () => void;
   onOpenCadence: () => void;
+  onOpenNotes: () => void;
 }
 
-const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOutreachModeSelect, onOpenSafety, onOpenCadence }) => {
+const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOutreachModeSelect, onOpenSafety, onOpenCadence, onOpenNotes }) => {
   return (
     <div className="flex-col gap-6 pb-6">
       <div className="mb-4">
@@ -20,7 +21,7 @@ const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOu
         <div className="flex-col gap-4">
           <h3 className="label-text">Med Spa Outreach</h3>
           
-          <button className="card btn-secondary" onClick={() => onLiveModeSelect(null)} style={{ textAlign: 'left', padding: '16px' }}>
+          <button className="card btn-secondary" onClick={() => onLiveModeSelect('medspa_gatekeeper')} style={{ textAlign: 'left', padding: '16px' }}>
             <div style={{ fontSize: '18px', fontWeight: 600 }}>Call a Med Spa</div>
             <p style={{ color: 'var(--color-muted-sage)', fontSize: '14px', marginTop: '4px' }}>Receptionist or Owner cold call</p>
           </button>
@@ -57,56 +58,16 @@ const StartView: React.FC<StartViewProps> = ({ workspace, onLiveModeSelect, onOu
         </div>
       )}
 
-      {/* ── Flow of Reaching Out ── */}
-      <div className="flex-col gap-4 mt-6">
-        <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-deep-charcoal)', marginBottom: '4px' }}>
-          Flow of Reaching Out
-        </h3>
-        <div style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          border: '1px solid var(--color-light-gray)',
-          overflow: 'hidden',
-        }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-            <thead>
-              <tr style={{ backgroundColor: 'var(--color-deep-charcoal)', color: '#fff' }}>
-                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: '13px' }}>Touch</th>
-                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: '13px' }}>Day</th>
-                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: '13px' }}>Channel</th>
-                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: '13px' }}>Purpose</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ['1', 'Day 1', 'Instagram soft touch', 'Create light familiarity'],
-                ['2', 'Day 1', 'Call', 'Try live access / find route to owner'],
-                ['3', 'Day 2', 'Instagram DM', 'Main direct-owner message'],
-                ['4', 'Day 4', 'Email', 'Backup/proof/forwardable message'],
-                ['5', 'Day 6', 'Call', 'Second live attempt with context'],
-                ['6', 'Day 9', 'Instagram DM follow-up', 'Push the core pain again'],
-                ['7', 'Day 14', 'Email follow-up and DM', 'Professional follow-up / value angle'],
-                ['8', 'Day 18–21', 'Final call or DM', 'Close loop'],
-              ].map(([touch, day, channel, purpose], i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--color-light-gray)', backgroundColor: i % 2 === 0 ? '#fff' : 'var(--color-warm-ivory)' }}>
-                  <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--color-soft-amber)' }}>{touch}</td>
-                  <td style={{ padding: '10px 14px', fontWeight: 500 }}>{day}</td>
-                  <td style={{ padding: '10px 14px' }}>{channel}</td>
-                  <td style={{ padding: '10px 14px', color: 'var(--color-muted-sage)' }}>{purpose}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <div className="flex-col gap-4 mt-6">
         <h3 className="label-text">Quick Links</h3>
         <button className="card btn-secondary" onClick={onOpenCadence} style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 600 }}>8-Touch Cadence</div>
+          <div style={{ fontSize: '16px', fontWeight: 600 }}>View Outreach Cadence</div>
         </button>
         <button className="card btn-secondary" onClick={onOpenSafety} style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
           <div style={{ fontSize: '16px', fontWeight: 600 }}>Positioning / Safety Rules</div>
+        </button>
+        <button className="card btn-secondary" onClick={onOpenNotes} style={{ padding: '16px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ fontSize: '16px', fontWeight: 600 }}>Open Notes</div>
         </button>
       </div>
     </div>

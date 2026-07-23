@@ -24,6 +24,11 @@ const CONTEXT_FILTERS: Array<'all' | SearchContext> = [
   'cadence',
 ];
 
+const CONTEXT_LABELS: Record<'all' | SearchContext, string> = {
+  all: 'All', gatekeeper: 'Gatekeeper', owner: 'Owner', fit_call: 'Fit Call', demo: 'Sales/Demo',
+  email: 'Email', ig: 'Instagram', partner: 'Referral Partner', safety: 'Safety', cadence: 'Cadence',
+};
+
 const SearchView: React.FC<SearchViewProps> = ({
   workspace,
   onGoToLiveMode,
@@ -59,7 +64,7 @@ const SearchView: React.FC<SearchViewProps> = ({
     <div className="flex-col" style={{ padding: '24px 16px', gap: '24px', paddingBottom: '100px' }}>
       <div>
         <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>
-          Emergency Search & Objections
+          Search & Objections
         </h2>
         <input
           type="text"
@@ -92,7 +97,7 @@ const SearchView: React.FC<SearchViewProps> = ({
             style={{ padding: '6px 12px', fontSize: '12px', textTransform: 'capitalize', backgroundColor: activeContext === context ? 'var(--color-slate-grey)' : '' }}
             onClick={() => setActiveContext(context)}
           >
-            {context}
+            {CONTEXT_LABELS[context]}
           </button>
         ))}
       </div>
@@ -122,19 +127,20 @@ const SearchView: React.FC<SearchViewProps> = ({
                 <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)' }}>
                   <div className="flex" style={{ gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '10px', padding: '4px 8px', backgroundColor: 'var(--color-warm-ivory)', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {entry.workspace} • {entry.context}
+                      {entry.workspace === 'medspa' ? 'Med Spa' : 'Referral Partner'} • {CONTEXT_LABELS[entry.context]}
                     </span>
                   </div>
                   <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginBottom: '4px' }}>{entry.title}</h3>
-                  <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)', fontStyle: 'italic' }}>Safe language: {entry.safeLanguage}</p>
+                  <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)' }}><strong>Goal:</strong> {entry.title}</p>
                 </div>
 
                 <div style={{ padding: '16px', backgroundColor: 'var(--color-soft-champagne)' }}>
-                  <h4 className="label-text" style={{ color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>Best Answer / Use This</h4>
+                  <h4 className="label-text" style={{ color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>Say or Send This</h4>
                   <p className="body-text" style={{ fontWeight: 500 }}>{entry.answer}</p>
 
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)' }}><strong>Next step:</strong> {entry.nextStep}</p>
+                    <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)' }}><strong>Do Not Do This:</strong> {entry.safeLanguage}</p>
+                    <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)' }}><strong>Next Action:</strong> {entry.nextStep}</p>
                     {notesField && (
                       <p style={{ fontSize: '14px', color: 'var(--color-slate-grey)' }}><strong>Related notes field:</strong> {notesField.replace('_', ' ')}</p>
                     )}

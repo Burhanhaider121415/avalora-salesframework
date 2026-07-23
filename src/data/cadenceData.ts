@@ -58,7 +58,7 @@ export const cadenceSteps: CadenceStep[] = [
     touch: 6,
     day: 'Day 9',
     channel: 'Instagram',
-    action: 'Instagram DM follow-up - Push the core pain again',
+    action: 'Instagram DM follow-up - Follow up with a fresh relevance angle',
     link: 'ig',
     bgColor: '#FFF5F0',
     borderColor: 'var(--color-accent-amber)',

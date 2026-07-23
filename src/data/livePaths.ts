@@ -36,7 +36,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Main Receptionist Opener",
       "goal": "Get connected to the owner/operator or the person responsible.",
-      "sayThis": "Hi, this is [Name] with Avalora. Maybe you can help me for a moment.\n\nI am calling about patient inquiry flow and missed booking inquiries for [Clinic Name] - not anything clinical and not a patient issue.\n\nWho usually handles that side of the clinic: the owner, practice manager, or office manager?",
+      "sayThis": "Hi, this is Burhan with Avalora. Maybe you can help me for a moment.\nI’m trying to reach whoever oversees new-patient calls and booking inquiries for [Clinic Name].\nWould that normally be the owner, practice manager, or office manager?",
       "branchButtons": [
         {
           "id": "transfer",
@@ -79,7 +79,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "what_is_this",
       "stage": "Immediate Objection",
       "goal": "Briefly explain without pitching the front desk.",
-      "sayThis": "It is about missed-call recovery and booking support for Miami med spas. Avalora helps catch patient inquiries when the team is busy, closed, or overloaded, then hands clean notes back to staff.\n\nWho usually handles that workflow there?",
+      "sayThis": "It’s about missed-call recovery and booking support for the clinic. Avalora helps catch new-patient inquiries when the team is busy or the clinic is closed, then hands the details back to staff.\nWho usually handles that workflow there?",
       "branchButtons": [
         {
           "id": "transfer",
@@ -102,7 +102,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "is_sales",
       "stage": "Immediate Objection",
       "goal": "Honest but low-pressure redirect.",
-      "sayThis": "It is an outreach call, but I am not trying to pitch the front desk. I am trying to find the right person for patient inquiry recovery and front-desk overflow.\n\nWho would oversee that - the owner, manager, or operations?",
+      "sayThis": "It is outreach, yes. I’m trying to reach the person who oversees missed calls, booking follow-up, or front-desk overflow for the clinic.\nWould that be the owner, manager, or operations?",
       "branchButtons": [
         {
           "id": "transfer",
@@ -125,7 +125,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "already_have",
       "stage": "Immediate Objection",
       "goal": "Support reception, don't replace it.",
-      "sayThis": "Absolutely - and Avalora is built to support reception, not replace it.\n\nIt is for missed moments: two calls at once, after-hours inquiries, DMs, forms, or callbacks when the team is busy.\n\nWho handles that side of the workflow?",
+      "sayThis": "Absolutely—and Avalora is built to support reception, not replace it.\nIt helps with missed moments, like another call coming in while the team is with a patient or an inquiry arriving after hours.\nWho handles that side of the workflow?",
       "branchButtons": [
         {
           "id": "transfer",
@@ -220,7 +220,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "transfer",
       "stage": "If She Transfers You",
       "goal": "Prepare for Owner.",
-      "sayThis": "(Before Transfer):\nThank you - I appreciate it. I will keep it brief.\n\n(When Owner Picks Up):\nHi [Name], thanks for taking the call. [Receptionist Name] connected me.\nI will keep this brief. I am [Name] with Avalora, and I am calling about missed-call and booking recovery for [Clinic Name] - specifically the moments where patient inquiries come in but the front desk cannot always catch them fast enough.\n\nWould it be worth hearing the 20-second version?",
+      "sayThis": "Hi [Name], thanks for taking the call. [Receptionist Name] connected me.\nI’m Burhan with Avalora. Can I give you the 20-second reason I reached out, and then you can tell me if it’s relevant?",
       "branchButtons": [
         {
           "id": "owner_answers",
@@ -251,7 +251,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "voicemail",
       "stage": "Voicemail",
       "goal": "Leave a 18-25 second voicemail.",
-      "sayThis": "Hey, this is [Name] with Avalora. I was calling for whoever handles patient inquiry flow or booking operations for [Clinic Name].\n\nWe work with Miami med spas on missed-call recovery, after-hours capture, and booking support - the moments where patient interest comes in but the front desk cannot always catch it fast enough.\n\nI will try again, and I can also send the short demo if that is easier.",
+      "sayThis": "Hi, this is Burhan with Avalora. I’m trying to reach whoever oversees new-patient calls and booking follow-up for [Clinic Name].\nWe help Miami med spas recover missed and after-hours inquiries while supporting the front desk.\nI’ll try again, or I can send the short demo. Again, Burhan at [Phone Number].",
       "branchButtons": [
         {
           "id": "disposition",
@@ -264,7 +264,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "data_capture",
       "stage": "Data Capture Before Ending",
       "goal": "Do not end without capturing data.",
-      "sayThis": "Capture:\n- Right person name\n- Role/title\n- Direct email\n- Best callback time\n- Permission to send short demo\n\n(If she only gives general inbox):\nThank you. And who should I address it to so it does not land without context?",
+      "sayThis": "Capture:\n- Right person name\n- Role/title\n- Direct email\n- Best callback time\n- Permission to send short demo\n- Main objection\n- Next action and date\n\n(If she only gives general inbox):\nThank you. And who should I address it to so it does not land without context?",
       "branchButtons": [
         {
           "id": "pricing_questions",
@@ -310,7 +310,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Main Opener",
       "goal": "Earn curiosity and permission to speak.",
-      "sayThis": "(Direct Owner Answer):\nHey [Name], this is [Name] with Avalora. I know I am calling unexpectedly - can I give you the quick reason I reached out, and then you can tell me if it is relevant?\n\n(Wait for yes)\n\nI noticed [personalized observation]. Avalora helps Miami med spas recover missed calls, after-hours inquiries, slow callbacks, and booking requests before patients go cold or call another clinic.\n\nWe support the front desk; we do not replace reception.\n\nQuick question: how are missed calls or after-hours booking inquiries handled right now?",
+      "sayThis": "Hey [First Name], this is Burhan with Avalora. I know I’m calling unexpectedly—can I give you the quick reason I reached out, and then you can tell me if it’s relevant?\n\nWait for permission.\n\nI noticed [specific observation]. That’s why I wanted to ask about [selected angle].",
       "branchButtons": [
         {
           "id": "pushback",
@@ -389,7 +389,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "angle_missed_call",
       "stage": "Angle: Missed-call recovery",
       "goal": "Highlight the leak.",
-      "sayThis": "The reason I called is that a lot of med spas are already creating patient interest, but the leak happens when calls are missed, callbacks are delayed, or booking requests never become clean staff tasks. Avalora helps recover those missed booking moments before the patient goes cold.",
+      "sayThis": "The reason I called is that clinics like yours are already doing the hard part—creating patient interest.\nThe risk is what happens after someone reaches out: a missed call, a delayed callback, or a booking request that doesn’t reach the right person quickly.\nAvalora helps recover those moments before the patient moves on.",
       "branchButtons": [
         {
           "id": "diagnostic",
@@ -428,7 +428,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "angle_roi",
       "stage": "Angle: Marketing ROI",
       "goal": "Highlight protecting demand.",
-      "sayThis": "If a clinic is investing in Instagram, Google, referrals, or ads, the response system becomes part of the ROI. Avalora helps protect the demand after it arrives - missed calls, forms, DMs, and booking requests.",
+      "sayThis": "Since [Clinic Name] is investing in [Instagram / Google / referrals / ads], the response process becomes part of that return.\nAvalora helps protect the demand after it arrives—whether it comes through a missed call, form, DM, or booking request.",
       "branchButtons": [
         {
           "id": "diagnostic",
@@ -454,7 +454,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "short_diagnostic",
       "stage": "Short Diagnostic",
       "goal": "Ask 1-3 questions max. Do not interrogate.",
-      "sayThis": "Ask one:\n1) How are missed calls or after-hours inquiries handled right now?\n2) When a Botox/filler/laser inquiry comes in while the team is busy, does it usually become a clean task for staff, or can it sit in voicemail, forms, or DMs?\n3) Do you know roughly how fast new inquiries are called or texted back when the front desk is with patients?\n4) If a serious patient calls after hours, what is the next step they experience?",
+      "sayThis": "Ask up to three questions:\n1. When the front desk is already with patients, what usually happens to the next new call or booking inquiry?\n2. What normally happens when someone reaches out after the clinic closes?\n3. Are calls, forms, and DMs handled through one follow-up process, or in separate places?",
       "branchButtons": [
         {
           "id": "buying_signals",
@@ -531,7 +531,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "send_demo",
       "stage": "Send Demo",
       "goal": "Confirm email and set follow-up.",
-      "sayThis": "Absolutely. I will send the short demo and website with a quick note so it has context.\n\nTo make sure it does not just sit in your inbox, should I follow up tomorrow or the next day after you have had a chance to hear it?",
+      "sayThis": "Absolutely. The short demo will be more useful than a long explanation because you can hear the patient experience and the staff handoff.\nWhat is the best email to send it to?\nAnd should I follow up tomorrow or the next day after you’ve had a chance to hear it?",
       "branchButtons": [
         {
           "id": "disposition",
@@ -544,7 +544,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "fit_call_close",
       "stage": "Fit Call Close",
       "goal": "Schedule the 10-15 min call.",
-      "sayThis": "A full pitch would not make sense right now. The better step is a 10-15 minute private fit call where we look at your call volume, booking flow, after-hours needs, and whether recovery is even relevant.\n\nWould later today or tomorrow be better?",
+      "sayThis": "A full presentation wouldn’t make sense yet.\nThe better next step is a short 10–15 minute fit call so I can understand your current workflow and see whether missed-call or booking recovery is actually relevant.\nI can do [Option A] or [Option B]. Which is easier?",
       "branchButtons": [
         {
           "id": "disposition",
@@ -572,7 +572,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Opening & Light Intro",
       "goal": "Open warm, calm, and direct. Introduce Avalora lightly.",
-      "sayThis": "\"Before I explain Avalora, I want to understand what made this worth looking at for your clinic.\n\nIf it looks relevant, I'll suggest a proper walkthrough built around your exact front-desk flow. If not, I'll tell you directly.\"\n\n(Light Avalora intro):\n\"Avalora helps med spas capture missed calls, after-hours inquiries, bilingual callers, and front-desk overflow without replacing their current team.\"",
+      "sayThis": "Before I explain Avalora, I want to understand what made this worth looking at for your clinic.\n\nWait for their response.\n\nAvalora helps med spas capture missed calls, after-hours inquiries, bilingual callers, and front-desk overflow without replacing their current team.",
       "branchButtons": [
         {
           "id": "q_why_now",

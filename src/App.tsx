@@ -125,6 +125,7 @@ function App() {
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => setCurrentMode('cadence')}
+                 onOpenNotes={() => openNotes('general')}
                />;
       case 'live':
         return (
@@ -187,6 +188,7 @@ function App() {
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => setCurrentMode('cadence')}
+                 onOpenNotes={() => openNotes('general')}
                />;
     }
   };
@@ -216,11 +218,6 @@ function App() {
         )}
       </div>
 
-      {currentMode !== 'notes' && (
-        <div className="right-utility-panel">
-          <NotesView workspace={activeWorkspace} isSidePanel={true} />
-        </div>
-      )}
     </div>
   );
 }

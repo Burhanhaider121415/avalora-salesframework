@@ -1,147 +1,65 @@
-import React, { useState } from 'react';
-import { outreachPaths, type ActionTarget } from '../data/outreachPaths';
+import React, { useMemo, useState } from 'react';
+import { getTemplateFields, outreachTemplates } from '../data/outreachTemplates';
 import type { NoteContext } from '../types/app';
 
 interface OutreachViewProps {
-  modeId: string; // 'email_mode' | 'ig_mode'
+  modeId: string;
   onClose: () => void;
   onOpenNotes?: (context: NoteContext) => void;
 }
 
 const OutreachView: React.FC<OutreachViewProps> = ({ modeId, onClose, onOpenNotes }) => {
-  const path = outreachPaths[modeId];
-  const [currentNodeId, setCurrentNodeId] = useState<string>(path.initialNode);
-  const [history, setHistory] = useState<string[]>([]);
-  
-  const currentNode = path.nodes[currentNodeId];
+  const channel = modeId === 'ig_mode' ? 'instagram' : 'email';
+  const templates = useMemo(() => outreachTemplates.filter((template) => template.channel === channel), [channel]);
+  const [selectedId, setSelectedId] = useState(templates[0]?.id ?? '');
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [copyStatus, setCopyStatus] = useState('');
+  const selected = templates.find((template) => template.id === selectedId) ?? templates[0];
+  const fields = selected ? getTemplateFields(selected.body) : [];
+  const completed = selected ? selected.body.replace(/\[([^\]]+)\]/g, (_, field: string) => values[field]?.trim() || `[${field}]`) : '';
 
-  const handleAction = (target: ActionTarget) => {
-    if (target === 'done') {
-      onClose();
-      return;
+  const copyTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(completed);
+      setCopyStatus('Copied');
+    } catch {
+      setCopyStatus('Copy failed');
     }
-    if (target === 'back') {
-      const prev = history.pop();
-      if (prev) {
-        setHistory([...history]);
-        setCurrentNodeId(prev);
-      }
-      return;
-    }
-    
-    // Normal forward navigation
-    setHistory([...history, currentNodeId]);
-    setCurrentNodeId(target);
+    window.setTimeout(() => setCopyStatus(''), 1800);
   };
 
-  if (!currentNode) return null;
-
+  if (!selected) return null;
   return (
-    <div className="flex-col" style={{ padding: '24px 16px', gap: '24px', paddingBottom: '100px' }}>
-      
-      {/* Header */}
+    <div className="flex-col gap-4" style={{ padding: '24px 16px 100px' }}>
       <div className="flex" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-slate-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {path.name}
-          </span>
-          <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-deep-charcoal)', marginTop: '4px' }}>
-            {currentNode.stage}
-          </h2>
+          <span className="label-text">{channel === 'email' ? 'Email outreach' : 'Instagram outreach'}</span>
+          <h2 style={{ fontSize: '26px', marginTop: '5px' }}>{channel === 'email' ? 'Email Templates' : 'Instagram DM Templates'}</h2>
+          <p style={{ color: 'var(--color-muted-sage)', marginTop: '6px', lineHeight: 1.45 }}>Choose the situation, complete only the fields this message uses, then copy the approved text.</p>
         </div>
-        <button 
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', fontSize: '24px', color: 'var(--color-slate-grey)', cursor: 'pointer' }}
-        >
-          &times;
-        </button>
+        <button onClick={onClose} aria-label="Close outreach" style={{ border: 0, background: 'transparent', fontSize: '26px', cursor: 'pointer' }}>×</button>
       </div>
-
-      {/* Goal Card */}
-      <div style={{ backgroundColor: '#fff', borderLeft: '4px solid var(--color-accent-amber)', padding: '16px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h3 className="label-text" style={{ marginBottom: '4px' }}>Goal</h3>
-        <p className="body-text" style={{ fontWeight: 500 }}>{currentNode.goal}</p>
-      </div>
-
-      {/* Fields (e.g. Research Card) */}
-      {currentNode.fields && (
-        <div style={{ backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <h3 className="label-text">Research Data</h3>
-          {currentNode.fields.map((f, i) => (
-            <div key={i}>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-slate-grey)', marginBottom: '4px' }}>{f.label}</label>
-              <input type="text" placeholder={f.placeholder} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--color-border)' }} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Checklist */}
-      {currentNode.checklist && (
-        <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-          <h3 className="label-text" style={{ marginBottom: '12px' }}>Checklist</h3>
-          <div className="flex-col gap-2">
-            {currentNode.checklist.map((item, i) => (
-              <label key={i} className="flex gap-2" style={{ alignItems: 'flex-start', cursor: 'pointer' }}>
-                <input type="checkbox" style={{ marginTop: '4px' }} />
-                <span className="body-text">{item}</span>
-              </label>
-            ))}
+      <label className="label-text" htmlFor="outreach-template">Situation</label>
+      <select id="outreach-template" value={selected.id} onChange={(event) => { setSelectedId(event.target.value); setValues({}); }} style={{ width: '100%', padding: '13px', borderRadius: '8px', border: '1px solid var(--color-light-gray)', fontFamily: 'inherit', fontSize: '15px' }}>
+        {templates.map((template) => <option key={template.id} value={template.id}>{template.title}</option>)}
+      </select>
+      {fields.length > 0 && (
+        <div className="card" style={{ padding: '16px' }}>
+          <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Message details</h3>
+          <div className="flex-col gap-3">
+            {fields.map((field) => <label key={field} style={{ fontSize: '13px', fontWeight: 600 }}>{field}<input value={values[field] ?? ''} onChange={(event) => setValues((current) => ({ ...current, [field]: event.target.value }))} placeholder={`Enter ${field}`} style={{ display: 'block', width: '100%', marginTop: '5px', padding: '10px', borderRadius: '7px', border: '1px solid var(--color-light-gray)', fontFamily: 'inherit' }} /></label>)}
           </div>
         </div>
       )}
-
-      {/* Instruction */}
-      {currentNode.instruction && (
-        <p className="body-text" style={{ color: 'var(--color-deep-charcoal)', backgroundColor: 'var(--color-warm-ivory)', padding: '16px', borderRadius: '8px' }}>
-          {currentNode.instruction}
-        </p>
-      )}
-
-      {/* Branches/Actions */}
-      <div className="flex-col gap-2" style={{ marginTop: '16px' }}>
-        {currentNode.branchButtons.map(btn => {
-          const isBack = btn.target === 'back';
-          const isDone = btn.target === 'done';
-          let btnClass = 'btn-secondary';
-          if (!isBack && !isDone && btn.target !== 'next') {
-            btnClass = 'btn-secondary'; // branching options
-          }
-          if (btn.target === 'next' || isDone) btnClass = 'btn-primary';
-
-          return (
-            <button 
-              key={btn.id}
-              className={`btn ${btnClass}`}
-              onClick={() => handleAction(btn.target)}
-              style={isBack ? { backgroundColor: 'transparent', border: '1px solid var(--color-border)' } : {}}
-            >
-              {btn.label}
-            </button>
-          );
-        })}
+      <div className="card" style={{ borderLeft: '4px solid var(--color-soft-amber)' }}>
+        <span className="label-text">Ready to send</span>
+        <pre style={{ whiteSpace: 'pre-wrap', margin: '10px 0 0', fontFamily: 'inherit', fontSize: '16px', lineHeight: 1.55 }}>{completed}</pre>
       </div>
-
-      {/* Sticky Action Bar */}
-      <div style={{
-        position: 'sticky',
-        bottom: '0',
-        backgroundColor: '#fff',
-        padding: '12px 0',
-        borderTop: '1px solid var(--color-border)',
-        display: 'flex',
-        gap: '8px',
-        justifyContent: 'center',
-        zIndex: 10,
-        marginTop: '24px'
-      }}>
-        {onOpenNotes && (
-          <button className="btn" onClick={() => onOpenNotes(modeId === 'ig_mode' ? 'ig' : 'email')} style={{ flex: 1, padding: '8px', fontSize: '14px', backgroundColor: 'transparent', color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-border)' }}>
-            Quick Notes
-          </button>
-        )}
+      <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
+        <button className="btn btn-primary" onClick={() => void copyTemplate()} style={{ flex: '1 1 180px' }}>{copyStatus || 'Copy Message'}</button>
+        {onOpenNotes && <button className="btn btn-secondary" onClick={() => onOpenNotes(channel === 'instagram' ? 'ig' : 'email')} style={{ flex: '1 1 180px' }}>Add Note</button>}
       </div>
-
+      <details className="card" style={{ padding: '14px 16px' }}><summary style={{ cursor: 'pointer', fontWeight: 600 }}>Full framework reference</summary><p style={{ color: 'var(--color-muted-sage)', lineHeight: 1.5, marginTop: '10px' }}>Use the Library for the full operating manuals. This screen keeps the live task focused on the approved message and its required details.</p></details>
     </div>
   );
 };

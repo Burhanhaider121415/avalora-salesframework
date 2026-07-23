@@ -8,7 +8,7 @@ function getEntryScore(entry: SearchEntry, query: string, activeWorkspace: Works
   const normalizedAnswer = normalizeSearchValue(entry.answer);
   const normalizedNextStep = normalizeSearchValue(entry.nextStep);
 
-  let score = entry.workspace === activeWorkspace ? 25 : 0;
+  let score = 0;
 
   if (!normalizedQuery) {
     return score;
@@ -33,7 +33,7 @@ function getEntryScore(entry: SearchEntry, query: string, activeWorkspace: Works
     if (keywordSet.some((keyword) => keyword.includes(term))) score += 28;
   });
 
-  return score;
+  return score > 0 && entry.workspace === activeWorkspace ? score + 25 : score;
 }
 
 export function getSearchResults(

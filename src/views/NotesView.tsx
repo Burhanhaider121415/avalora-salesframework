@@ -64,6 +64,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
   const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState('');
+  const [saveStatus, setSaveStatus] = useState('');
 
   // Load notes on mount
   useEffect(() => {
@@ -109,6 +110,8 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
 
     setNoteTitle('');
     setNoteBody('');
+    setSaveStatus('Saved locally on this device.');
+    setTimeout(() => setSaveStatus(''), 2000);
   };
 
   const handleEdit = (note: SavedNote) => {
@@ -137,6 +140,10 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
       setCopyStatus('Copy failed');
     }
     setTimeout(() => setCopyStatus(''), 2000);
+  };
+
+  const handleCopyFormattedNote = async (note: Pick<SavedNote, 'category' | 'title' | 'body'>) => {
+    await handleCopyNote(`${note.category}\n${note.title}\n\n${note.body}`);
   };
 
   const handleClear = () => {
@@ -184,6 +191,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
         >
           Save Note
         </button>
+        {saveStatus && <p style={{ fontSize: '12px', color: 'var(--color-muted-sage)', margin: 0 }}>{saveStatus}</p>}
 
         {/* Latest saved notes */}
         {displayedNotes.slice(0, 5).map(note => (
@@ -199,6 +207,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
             </div>
             <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
               <button onClick={() => void handleCopyNote(note.body)} style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Copy</button>
+              <button onClick={() => void handleCopyFormattedNote(note)} style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Copy Formatted</button>
               <button onClick={() => handleDelete(note.id)} className="note-delete-btn" style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #f5c6cb', color: '#a94442', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
             </div>
           </div>
@@ -215,7 +224,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
           Quick Notes
         </h2>
         <p style={{ fontSize: '15px', color: 'var(--color-muted-sage)', lineHeight: 1.5 }}>
-          Simple scratchpad. Save notes locally in your browser. Copy to paste into your external sheet.
+          Simple scratchpad. Saved locally on this device. Copy to paste into your external sheet.
         </p>
       </div>
 
@@ -300,6 +309,17 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
                 {copyStatus || 'Copy Note'}
               </button>
               <button
+                onClick={() => void handleCopyFormattedNote({ category, title: noteTitle.trim() || 'Untitled note', body: noteBody })}
+                disabled={!noteBody.trim()}
+                style={{
+                  padding: '14px 20px', borderRadius: '8px', fontSize: '15px', backgroundColor: '#fff',
+                  color: 'var(--color-deep-charcoal)', border: '1px solid var(--color-light-gray)',
+                  cursor: noteBody.trim() ? 'pointer' : 'default', fontFamily: 'inherit'
+                }}
+              >
+                Copy Formatted Note
+              </button>
+              <button
                 onClick={handleClear}
                 style={{
                   padding: '14px 20px', borderRadius: '8px', fontSize: '15px',
@@ -334,7 +354,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
 
           {displayedNotes.length === 0 ? (
             <p style={{ fontSize: '14px', color: 'var(--color-muted-sage)', padding: '20px 0' }}>
-              No notes saved yet. Notes persist in this browser after refresh.
+              No notes saved yet. Notes remain saved locally on this device after refresh.
             </p>
           ) : (
             displayedNotes.map(note => (
@@ -354,6 +374,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
                 <div className="note-card-actions">
                   <button onClick={() => handleEdit(note)}>Edit</button>
                   <button onClick={() => void handleCopyNote(note.body)}>Copy</button>
+                  <button onClick={() => void handleCopyFormattedNote(note)}>Copy Formatted Note</button>
                   <button className="note-delete-btn" onClick={() => handleDelete(note.id)}>Delete</button>
                 </div>
               </div>
