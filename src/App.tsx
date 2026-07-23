@@ -121,18 +121,15 @@ function App() {
     switch (currentMode) {
       case 'start':
         return <StartView 
-                 workspace={activeWorkspace}
                  onLiveModeSelect={handleLiveModeSelect} 
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
-                 onOpenLibrary={openLibrary}
                />;
       case 'live':
         return (
           <LiveView
-            workspace={activeWorkspace}
             scenario={activeLiveScenario}
             onReset={() => setCurrentMode('start')}
             onGoToLibrary={() => openLibrary(activeWorkspace)}
@@ -149,7 +146,7 @@ function App() {
           />
         );
       case 'library':
-        return <LibraryView workspace={activeWorkspace} />;
+        return <LibraryView />;
       case 'search':
         return <SearchView 
                  workspace={activeWorkspace}
@@ -166,7 +163,7 @@ function App() {
                  onOpenNotes={openNotes}
                />;
       case 'notes':
-        return <NotesView initialContext={activeNotesContext as any} workspace={activeWorkspace} />;
+        return <NotesView initialContext={activeNotesContext as any} />;
       case 'safety':
         return <PositioningSafetyView />;
       case 'notFound':
@@ -185,13 +182,11 @@ function App() {
         );
       default:
         return <StartView 
-                 workspace={activeWorkspace}
                  onLiveModeSelect={handleLiveModeSelect} 
                  onOutreachModeSelect={handleOutreachModeSelect}
                  onOpenSafety={() => setCurrentMode('safety')} 
                  onOpenCadence={() => openLibrary('medspa')}
                  onOpenNotes={() => openNotes('general')}
-                 onOpenLibrary={openLibrary}
                />;
     }
   };
@@ -203,16 +198,8 @@ function App() {
       <div className="app-container main-content-wrapper">
         <TopBar 
           currentMode={currentMode === 'outreach' || currentMode === 'safety' || currentMode === 'cadence' || currentMode === 'notFound' ? 'start' : currentMode} 
-          workspace={activeWorkspace} 
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
-          onWorkspaceToggle={() => {
-            const nextWorkspace = activeWorkspace === 'medspa' ? 'partner' : 'medspa';
-            setActiveWorkspace(nextWorkspace);
-            if (currentMode === 'notes') {
-              setActiveNotesContext(nextWorkspace === 'partner' ? 'partner' : 'gatekeeper');
-            }
-          }}
           onReset={() => setCurrentMode('start')}
         />
         <div className="content-area">

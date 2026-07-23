@@ -4,7 +4,6 @@ import NotesView from './NotesView';
 import type { NoteContext, Workspace } from '../types/app';
 
 interface LiveViewProps {
-  workspace: Workspace;
   scenario: string | null;
   onReset: () => void;
   onGoToLibrary: () => void;
@@ -19,7 +18,7 @@ function getNotesContext(scenario: string, workspace: Workspace): NoteContext {
   return 'gatekeeper';
 }
 
-const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoToLibrary }) => {
+const LiveView: React.FC<LiveViewProps> = ({ scenario, onReset, onGoToLibrary }) => {
   const [currentScenarioId, setCurrentScenarioId] = useState<string | null>(scenario);
   const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
@@ -31,7 +30,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
     setCurrentNodeId(scenario && livePaths[scenario] ? livePaths[scenario].initialNode : null);
     setHistory([]);
     setNotesOpen(false);
-  }, [scenario, workspace]);
+  }, [scenario]);
 
   const selectScenario = (id: string) => {
     setCurrentScenarioId(id);
@@ -78,10 +77,8 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
     }
   };
 
-  if (!currentScenarioId || !livePaths[currentScenarioId] || livePaths[currentScenarioId].workspace !== workspace) {
-    const available = workspace === 'medspa'
-      ? ['medspa_gatekeeper', 'medspa_owner']
-      : ['partner_gatekeeper'];
+  if (!currentScenarioId || !livePaths[currentScenarioId]) {
+    const available = ['medspa_gatekeeper', 'medspa_owner', 'partner_gatekeeper', 'partner_live'];
     return (
       <div className="flex-col gap-4 pb-6">
         <div className="mb-4">
@@ -104,7 +101,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
   const currentStepIndex = nodeIds.indexOf(node.id);
   const nextStep = path.nodes[nodeIds[currentStepIndex + 1]];
   const outcomes = node.branchButtons.filter((button) => button.target !== 'back');
-  const notesContext = getNotesContext(currentScenarioId, workspace);
+  const notesContext = getNotesContext(currentScenarioId, path.workspace);
 
   const copyScript = async () => {
     try {
@@ -162,7 +159,7 @@ const LiveView: React.FC<LiveViewProps> = ({ workspace, scenario, onReset, onGoT
       {notesOpen && (
         <aside role="dialog" aria-label="Quick Notes" style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 'min(380px, 100vw)', background: '#fff', boxShadow: '-8px 0 28px rgba(0,0,0,.14)', zIndex: 50, borderLeft: '1px solid var(--color-light-gray)' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 12px 0' }}><button onClick={() => setNotesOpen(false)} aria-label="Close notes" style={{ border: 0, background: 'transparent', fontSize: '24px', cursor: 'pointer' }}>×</button></div>
-          <NotesView workspace={workspace} initialContext={notesContext} isSidePanel />
+          <NotesView initialContext={notesContext} isSidePanel />
         </aside>
       )}
     </div>

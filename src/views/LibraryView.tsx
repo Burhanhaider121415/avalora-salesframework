@@ -4,10 +4,6 @@ import type { LibrarySection } from '../data/libraryData';
 import { cadenceSteps } from '../data/cadenceData';
 import { updatedMedSpaLibrary } from '../data/updatedLibraryData';
 
-interface LibraryViewProps {
-  workspace: 'medspa' | 'partner';
-}
-
 /**
  * Renders raw framework text with visual hierarchy.
  * Detects headings, bullets, script lines, warnings, and separates them.
@@ -162,13 +158,15 @@ function renderSection(sec: LibrarySection) {
   );
 }
 
-const LibraryView: React.FC<LibraryViewProps> = ({ workspace }) => {
+const LibraryView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
-  const activeLibrary = workspace === 'medspa'
-    ? [...updatedMedSpaLibrary, ...medSpaLibrary.filter((item) => item.id !== 'lib_doc_0')]
-    : partnerLibrary;
+  const activeLibrary = [
+    ...updatedMedSpaLibrary,
+    ...medSpaLibrary.filter((item) => item.id !== 'lib_doc_0'),
+    ...partnerLibrary,
+  ];
 
   const filteredLibrary = activeLibrary.filter(item => 
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -183,10 +181,10 @@ const LibraryView: React.FC<LibraryViewProps> = ({ workspace }) => {
     <div className="flex-col" style={{ padding: '24px 16px', gap: '24px', paddingBottom: '100px' }}>
       <div>
         <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-deep-charcoal)', marginBottom: '8px' }}>
-          {workspace === 'medspa' ? 'Med Spa Owner Library' : 'Referral Partner Library'}
+          Complete Framework Library
         </h2>
         <p style={{ fontSize: '16px', color: 'var(--color-muted-sage)', lineHeight: 1.5 }}>
-          Complete frameworks, reference materials, and guidelines. Click any document to expand the full source text.
+          Med spa and referral partner frameworks are together in one place. Click any document to expand the full source text.
         </p>
       </div>
 
@@ -205,7 +203,7 @@ const LibraryView: React.FC<LibraryViewProps> = ({ workspace }) => {
         }}
       />
 
-      {workspace === 'medspa' && !searchTerm && (
+      {!searchTerm && (
         <details className="framework-section-card" open>
           <summary style={{ cursor: 'pointer', fontSize: '18px', fontWeight: 600 }}>8-Touch Cadence</summary>
           <div className="framework-content" style={{ marginTop: '14px' }}>

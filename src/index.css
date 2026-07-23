@@ -292,6 +292,18 @@ p {
   padding: 24px 16px;
 }
 
+.start-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .start-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Highlights */
 .highlight {
   background-color: var(--color-soft-champagne);

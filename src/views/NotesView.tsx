@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import type { NoteContext, Workspace } from '../types/app';
+import type { NoteContext } from '../types/app';
 
 interface NotesViewProps {
   initialContext?: NoteContext;
-  workspace?: Workspace;
   isSidePanel?: boolean;
 }
 
@@ -57,7 +56,7 @@ function persistNotes(notes: SavedNote[]) {
   }
 }
 
-const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', workspace = 'medspa', isSidePanel = false }) => {
+const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', isSidePanel = false }) => {
   const [category, setCategory] = useState<NoteCategory>(contextToCategory(initialContext));
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
@@ -76,11 +75,7 @@ const NotesView: React.FC<NotesViewProps> = ({ initialContext = 'general', works
     setCategory(contextToCategory(initialContext));
   }, [initialContext]);
 
-  // Filter notes by workspace context
-  const partnerCategories: NoteCategory[] = ['Referral Partner', 'General'];
-  const displayedNotes = workspace === 'partner'
-    ? savedNotes.filter(n => partnerCategories.includes(n.category))
-    : savedNotes;
+  const displayedNotes = savedNotes;
 
   const handleSave = () => {
     if (!noteBody.trim()) return;
