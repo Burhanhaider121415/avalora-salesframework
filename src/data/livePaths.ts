@@ -890,7 +890,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "opener",
       "stage": "Main Gatekeeper Opener",
       "goal": "Get to the decision-maker or get the best way to send the short demo.",
-      "sayThis": "Hi, this is Burhan with Avalora. Maybe you can help me for a moment.\nI’m trying to reach [Name] regarding a short partner-resource conversation for the aesthetic space.\nWould [Name] be the right person for that?",
+      "sayThis": "Hi, maybe you can help me for a second.\nI’m trying to reach [Name]. This is Burhan with Avalora.\nI came across [Company Name] because of your work with med spas and aesthetic clinics. I’m reaching out about a possible partner resource for clinics you support, and I wanted to get a short demo in front of [Name].\nWould [Name] be the right person for partnerships or client relationships?",
       "branchButtons": [
         {
           "id": "what_is_this",
@@ -926,7 +926,9 @@ export const livePaths: Record<string, LivePath> = {
           "id": "clean_transfer",
           "label": "Clean Transfer Ask",
           "target": "clean_transfer"
-        }
+        },
+        { "id": "right_person", "label": "Right person identified", "target": "clean_transfer" },
+        { "id": "wrong_contact", "label": "Wrong contact", "target": "disposition" }
       ]
     },
     "what_is_this": {
@@ -946,7 +948,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "is_sales",
       "stage": "Objection: Is this sales?",
       "goal": "Reframe as partner conversation.",
-      "sayThis": "\"Not really in the normal sense.\n\nI'm not calling to sell [Name] a service for their company.\n\nIt's more of a referral partner conversation. We want to show a short demo first, and if it feels useful for clinics in their network, we can talk about introductions later.\"\n\nThen ask:\n\"Would [Name] usually handle something like that?\"",
+      "sayThis": "It is outreach, yes, but I’m not calling to sell a service to your company.\nIt’s a potential partner conversation around the med spas or aesthetic clinics you already support.\nWould [Name] normally handle something like that?",
       "branchButtons": [
         {
           "id": "back",
@@ -959,7 +961,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "send_info",
       "stage": "Response: Send Info",
       "goal": "Get email and direct contact name.",
-      "sayThis": "\"Sure, I can do that.\n\nWhat's the best email to send the short demo and context to?\n\nAnd should I address it directly to [Name]?\"\n\nAfter they give email:\n\"Perfect. And just so I don't send it into the wrong place — is [Name] the right person for partner conversations, or is there someone else who handles relationships like this?\"",
+      "sayThis": "Of course. What is the best direct email to send the short demo and a brief explanation to?\nAnd should I address it directly to [Name], or is there someone else who handles partnerships or client relationships?\n\nAfter receiving the email: Perfect. Is there a good time tomorrow or the following day to follow up after they’ve had a chance to hear it?",
       "branchButtons": [
         {
           "id": "back",
@@ -972,7 +974,7 @@ export const livePaths: Record<string, LivePath> = {
       "id": "not_available",
       "stage": "Response: Not available",
       "goal": "Find best way to send demo.",
-      "sayThis": "\"No problem.\n\nWhat's the best way to get a short demo and note in front of them?\n\nI don't want to send a long pitch — it's just a quick partner demo for clinics in the aesthetic space.\"\n\nThen ask:\n\"Would email be best, or should I call back at a better time?\"",
+      "sayThis": "No problem. What is usually the best time today or tomorrow to reach [Name] directly?\nIf they cannot give a time: What is the best direct email to send the short demo and context to so it reaches [Name] properly?",
       "branchButtons": [
         {
           "id": "back",
@@ -1011,8 +1013,9 @@ export const livePaths: Record<string, LivePath> = {
       "id": "clean_transfer",
       "stage": "Transfer Ask",
       "goal": "Ask for the transfer directly.",
-      "sayThis": "Option 1:\n\"Would you be able to connect me with [Name] for a quick minute?\"\n\nOption 2:\n\"What's the cleanest way to get this in front of [Name]?\"\n\nOption 3:\n\"Should I send the demo to you, or directly to [Name]?\"",
+      "sayThis": "Would you be able to connect me with [Name] for a quick minute? I’ll keep it brief.\n\nBefore transfer: Thank you—I appreciate it.\n\nWhen the decision-maker answers: Hi [Name], thanks for taking the call. [Gatekeeper Name] connected me. I’m Burhan with Avalora. Can I give you the 20-second reason I reached out, and then you can tell me whether it’s relevant?",
       "branchButtons": [
+        { "id": "transferred", "label": "Transferred", "target": "partner_answers" },
         {
           "id": "back",
           "label": "Back to Opener",
