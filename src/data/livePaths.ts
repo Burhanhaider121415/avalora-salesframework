@@ -281,15 +281,39 @@ export const livePaths: Record<string, LivePath> = {
     "pricing_questions": {
       "id": "pricing_questions",
       "stage": "Pricing and Safety Questions",
-      "goal": "Do not read the package table to receptionist.",
-      "sayThis": "(If Pricing):\nPackages start at $299/month, but pricing depends on call volume, lead volume, and how much recovery workflow the clinic wants handled. I would not want to guess that on a front-desk call. The better first step is the short demo or a 10-15 minute fit call with whoever handles booking flow.\n\n(If AI / Safety):\nAvalora uses voice and workflow technology, but the important part is the outcome: missed-call recovery and clean booking handoff. It does not diagnose or give medical advice. Anything clinical goes back to the clinic team.",
+      "goal": "Answer only the question that was asked.",
+      "sayThis": "Select the question. Do not read a combined pricing and safety explanation to the receptionist.",
       "branchButtons": [
+        { "id": "pricing", "label": "Pricing", "target": "gatekeeper_pricing" },
+        { "id": "ai", "label": "Is this AI?", "target": "gatekeeper_ai" },
+        { "id": "safety", "label": "Safety / medical boundaries", "target": "gatekeeper_safety" },
+        { "id": "crm", "label": "CRM / booking system", "target": "gatekeeper_crm" },
         {
           "id": "disposition",
           "label": "End / Disposition",
           "target": "disposition"
         }
       ]
+    },
+    "gatekeeper_pricing": {
+      "id": "gatekeeper_pricing", "stage": "Pricing", "goal": "Keep pricing off the front-desk call.",
+      "sayThis": "Packages start at $299/month, but pricing depends on call volume, lead volume, and how much recovery workflow the clinic wants handled. I would not want to guess that on a front-desk call. The better first step is the short demo or a 10–15 minute fit call with whoever handles booking flow.",
+      "branchButtons": [{ "id": "done", "label": "End / Disposition", "target": "disposition" }]
+    },
+    "gatekeeper_ai": {
+      "id": "gatekeeper_ai", "stage": "Is this AI?", "goal": "Be transparent without leading with technology.",
+      "sayThis": "Avalora uses AI-supported voice and workflow technology, but the important part is the outcome: missed-call recovery and clean booking handoff. The clinic controls approved answers, boundaries, escalation rules, and staff handoff.",
+      "branchButtons": [{ "id": "done", "label": "End / Disposition", "target": "disposition" }]
+    },
+    "gatekeeper_safety": {
+      "id": "gatekeeper_safety", "stage": "Safety / Medical Boundaries", "goal": "State the boundaries clearly.",
+      "sayThis": "Avalora does not diagnose, prescribe, recommend treatment, or provide medical advice. It handles approved intake, booking support, clinic-approved FAQs, and handoff. Anything clinical, sensitive, or urgent returns to the clinic team.",
+      "branchButtons": [{ "id": "done", "label": "End / Disposition", "target": "disposition" }]
+    },
+    "gatekeeper_crm": {
+      "id": "gatekeeper_crm", "stage": "CRM / Booking System", "goal": "Respect the existing workflow.",
+      "sayThis": "Avalora does not replace the CRM or booking system. It helps catch the inquiry before it disappears, then hands the details into the clinic’s existing workflow.",
+      "branchButtons": [{ "id": "done", "label": "End / Disposition", "target": "disposition" }]
     },
     "disposition": {
       "id": "disposition",
