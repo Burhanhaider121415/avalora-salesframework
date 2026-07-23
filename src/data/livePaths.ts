@@ -356,26 +356,21 @@ export const livePaths: Record<string, LivePath> = {
     "early_pushback": {
       "id": "early_pushback",
       "stage": "Early Owner Pushback",
-      "goal": "Acknowledge, keep it to demo or fit call.",
-      "sayThis": "(If \"What is this about?\"):\nIt is about missed-call and booking recovery for med spas - the moments when patient interest comes in but the front desk cannot always catch it fast enough. We support the team; we do not replace reception. Would it be worth hearing the 20-second version?\n\n(If \"Is this a sales call?\"):\nIt is outreach, yes - but I am not calling to hard-pitch you. I am calling because Avalora helps med spas recover missed booking moments, and the easiest first step is just hearing the short demo to see if it is relevant.\n\n(If \"I am busy\"):\nCompletely understand. I will not try to squeeze a pitch into a bad time. The short version is: we help recover missed calls, after-hours inquiries, and booking requests before patients go cold. Would it be better if I sent the demo and followed up tomorrow, or should we find 10 minutes later today?",
+      "goal": "Answer only the pushback that was raised.",
+      "sayThis": "Select what the owner said. The response appears on the next card.",
       "branchButtons": [
-        {
-          "id": "choose_angle",
-          "label": "Owner allows you to continue",
-          "target": "choose_angle"
-        },
-        {
-          "id": "demo_close",
-          "label": "Jump to Demo Close",
-          "target": "demo_close"
-        },
-        {
-          "id": "disposition",
-          "label": "End Call",
-          "target": "disposition"
-        }
+        { "id": "what", "label": "What is this about?", "target": "owner_what_about" },
+        { "id": "sales", "label": "Is this a sales call?", "target": "owner_sales_call" },
+        { "id": "busy", "label": "I’m busy", "target": "owner_busy" },
+        { "id": "not_interested", "label": "Not interested", "target": "owner_not_interested" },
+        { "id": "send_info", "label": "Send me information", "target": "owner_send_info" }
       ]
     },
+    "owner_what_about": { "id": "owner_what_about", "stage": "What Is This About?", "goal": "Give the short, operational explanation.", "sayThis": "It is about missed-call and booking recovery for med spas—the moments when patient interest comes in but the front desk cannot always catch it fast enough. We support the team; we do not replace reception. Would it be worth hearing the 20-second version?", "branchButtons": [{ "id": "angle", "label": "Select the relevant angle", "target": "choose_angle" }] },
+    "owner_sales_call": { "id": "owner_sales_call", "stage": "Is This a Sales Call?", "goal": "Be direct and low pressure.", "sayThis": "It is outreach, yes—but I am not calling to hard-pitch you. I am calling because Avalora helps med spas recover missed booking moments, and the easiest first step is just hearing the short demo to see if it is relevant.", "branchButtons": [{ "id": "demo", "label": "Move to demo close", "target": "demo_close" }] },
+    "owner_busy": { "id": "owner_busy", "stage": "I’m Busy", "goal": "Respect their time and earn a next step.", "sayThis": "Completely understand. I will not try to squeeze a pitch into a bad time. The short version is: we help recover missed calls, after-hours inquiries, and booking requests before patients go cold. Would it be better if I sent the demo and followed up tomorrow, or should we find 10 minutes later today?", "branchButtons": [{ "id": "demo", "label": "Send demo", "target": "send_demo" }] },
+    "owner_not_interested": { "id": "owner_not_interested", "stage": "Not Interested", "goal": "Respect the answer.", "sayThis": "Understood. I appreciate you being direct. I will not keep you—if missed calls, after-hours inquiries, or booking follow-up become relevant later, Avalora is focused on that gap.", "branchButtons": [{ "id": "done", "label": "End call", "target": "disposition" }] },
+    "owner_send_info": { "id": "owner_send_info", "stage": "Send Information", "goal": "Move to the short demo.", "sayThis": "Absolutely. The short demo will be more useful than a long explanation because you can hear the patient experience and staff handoff. What is the best email to send it to?", "branchButtons": [{ "id": "demo", "label": "Confirm demo follow-up", "target": "send_demo" }] },
     "choose_angle": {
       "id": "choose_angle",
       "stage": "20-Second Reason for Calling",
@@ -496,25 +491,24 @@ export const livePaths: Record<string, LivePath> = {
       "id": "owner_objections",
       "stage": "Owner Objections",
       "goal": "Acknowledge -> Reframe -> Redirect to demo.",
-      "sayThis": "(If \"We already have a receptionist\"):\nThat is exactly who Avalora is built to support. Most good clinics already have a front desk. The gap is the moments no receptionist can physically catch in real time - two calls at once, patient checkout, lunch rush, DMs, forms, after-hours inquiries. Avalora helps recover those moments.\n\n(If \"We already have a CRM\"):\nGreat - Avalora is not trying to replace that. A CRM helps after the lead is captured. Avalora helps catch the inquiry before it disappears... then routes it cleanly to your workflow.\n\n(If \"We do not want AI answering\"):\nCompletely fair. Most owners do not want a cheap AI voice touching their brand. That is why we do not lead with AI. The clinic controls approved answers, escalation rules, and handoff.",
+      "sayThis": "Select the objection. Only the matching response will be shown.",
       "branchButtons": [
-        {
-          "id": "demo_close",
-          "label": "Demo Close",
-          "target": "demo_close"
-        },
-        {
-          "id": "pricing",
-          "label": "Pricing Question",
-          "target": "pricing_reference"
-        },
-        {
-          "id": "disposition",
-          "label": "End Call",
-          "target": "disposition"
-        }
+        { "id": "reception", "label": "We already have a receptionist", "target": "owner_receptionist" },
+        { "id": "crm", "label": "We already have a CRM", "target": "owner_crm" },
+        { "id": "ai", "label": "We don’t want AI answering", "target": "owner_ai" },
+        { "id": "textback", "label": "We use missed-call text-back", "target": "owner_textback" },
+        { "id": "safe", "label": "Is this safe?", "target": "owner_safe" },
+        { "id": "not", "label": "Not interested", "target": "owner_not_interested" },
+        { "id": "later", "label": "Call me later", "target": "owner_busy" },
+        { "id": "small", "label": "We’re too small / handle it manually", "target": "owner_small" }
       ]
     },
+    "owner_receptionist": { "id": "owner_receptionist", "stage": "Receptionist Objection", "goal": "Protect the front desk.", "sayThis": "That is exactly who Avalora is built to support. The gap is the moments no receptionist can physically catch in real time—two calls at once, patient checkout, lunch rush, DMs, forms, or after-hours inquiries.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }] },
+    "owner_crm": { "id": "owner_crm", "stage": "CRM Objection", "goal": "Keep the existing system in place.", "sayThis": "Great—Avalora is not trying to replace that. A CRM helps after the lead is captured. Avalora helps catch the inquiry before it disappears, then routes it cleanly to the existing workflow.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }] },
+    "owner_ai": { "id": "owner_ai", "stage": "AI Objection", "goal": "Be transparent and controlled.", "sayThis": "Completely fair. Avalora uses AI-supported voice and workflow technology, but the clinic controls approved answers, escalation rules, and handoff. It does not diagnose or give medical advice.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }] },
+    "owner_textback": { "id": "owner_textback", "stage": "Missed-Call Text-Back", "goal": "Explain the distinction.", "sayThis": "That can be useful after a missed call. Avalora is broader support for missed calls, after-hours inquiries, booking requests, and a controlled handoff to staff.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }] },
+    "owner_safe": { "id": "owner_safe", "stage": "Safety", "goal": "State the medical boundary.", "sayThis": "Avalora does not diagnose, prescribe, recommend treatment, or decide whether someone is a candidate. It handles approved intake, booking support, clinic-approved FAQs, and handoff. Anything clinical, sensitive, or urgent returns to the clinic team.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }] },
+    "owner_small": { "id": "owner_small", "stage": "Too Small / Manual Workflow", "goal": "Check relevance without pressure.", "sayThis": "That may be the right approach if the current process is consistently covered. The short demo is simply a way to judge whether missed-call or booking recovery would ever add value without changing the team’s workflow.", "branchButtons": [{ "id": "demo", "label": "Demo close", "target": "demo_close" }, { "id": "done", "label": "End call", "target": "disposition" }] },
     "pricing_reference": {
       "id": "pricing_reference",
       "stage": "Pricing Question",
